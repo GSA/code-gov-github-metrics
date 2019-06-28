@@ -1,0 +1,14 @@
+{
+  "name": "code-gov-github-metrics",
+  "version": "1.0.0",
+  "description": "Compile GitHub metrics across code.gov repos",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Courtney Brousseau",
+  "license": "CC0-1.0",
+  "dependencies": {
+    "graphql-request": "^1.8.2"
+  }
+}
