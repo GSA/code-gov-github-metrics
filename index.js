@@ -13,21 +13,29 @@ async function main() {
   const query = /* GraphQL */ `
     {
         repository(owner:"GSA", name:"code-gov-front-end") {
-        issues(last:1, states:CLOSED) {
-            edges {
-            node {
-                title
-                url
-                labels(first:5) {
+            issues(last:1, states:CLOSED) {
                 edges {
                     node {
-                    name
+                        title
+                        url
+                        labels(first:5) {
+                        edges {
+                            node {
+                            name
+                            }
+                        }
+                        }
                     }
                 }
+            }
+            collaborators(last:10) {
+                edges {
+                    node {
+                        email
+                        name
+                    }
                 }
             }
-            }
-        }
         }
     }
   `
