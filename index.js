@@ -32,8 +32,12 @@ async function main() {
     }
   `
 
-  const data = await graphQLClient.request(query)
-  console.log(JSON.stringify(data, undefined, 2))
+  const dataJSON = await graphQLClient.request(query);
+  const dataString = JSON.stringify(dataJSON, undefined, 2);
+  console.log(dataString);
+
+  // Log the name of the most recently closed issue in the code-gov-front-end
+  console.log(dataJSON["repository"]["issues"]["edges"][0]["node"]["title"]);
 }
 
 main().catch(error => console.error(error))
