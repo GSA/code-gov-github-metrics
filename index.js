@@ -14,6 +14,7 @@ async function main() {
     {
         repository(owner:"GSA", name:"code-gov-front-end") {
             issues(last:1, states:CLOSED) {
+                totalCount
                 edges {
                     node {
                         title
@@ -29,6 +30,7 @@ async function main() {
                 }
             }
             collaborators(last:10) {
+                totalCount
                 edges {
                     node {
                         email
@@ -36,6 +38,21 @@ async function main() {
                     }
                 }
             }
+            stargazers {
+                totalCount
+            }
+            forks {
+                totalCount
+            }
+            pullRequests {
+                totalCount
+            }
+        }
+        rateLimit {
+            limit
+            cost
+            remaining
+            resetAt
         }
     }
   `
