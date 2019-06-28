@@ -1,14 +1,39 @@
-const { request } = require('graphql-request');
+require('dotenv').config();
+const { GraphQLClient } = require('graphql-request');
 
-const query = `{
-  Movie(title: "Inception") {
-    releaseDate
-    actors {
-      name
+async function main() {
+  const endpoint = 'https://api.github.com/graphql'
+
+  const graphQLClient = new GraphQLClient(endpoint, {
+    headers: {
+      authorization: 'Bearer ' + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
+    },
+  })
+
+  const query = /* GraphQL */ `
+    {
+        repository(owner:"GSA", name:"code-gov-front-end") {
+        issues(last:1, states:CLOSED) {
+            edges {
+            node {
+                title
+                url
+                labels(first:5) {
+                edges {
+                    node {
+                    name
+                    }
+                }
+                }
+            }
+            }
+        }
+        }
     }
-  }
-}`
+  `
 
-request('https://api.graph.cool/simple/v1/movies', query).then(data =>
-  console.log(data)
-)
+  const data = await graphQLClient.request(query)
+  console.log(JSON.stringify(data, undefined, 2))
+}
+
+main().catch(error => console.error(error))
