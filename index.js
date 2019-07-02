@@ -13,19 +13,24 @@ async function main() {
   const query = /* GraphQL */ `
     {
         repository(owner:"GSA", name:"code-gov-front-end") {
-            issues(last:1, states:CLOSED) {
+            issues(last:10) {
                 totalCount
                 edges {
                     node {
                         title
                         url
                         labels(first:5) {
-                        edges {
-                            node {
-                            name
+                            edges {
+                                node {
+                                    name
+                                }
                             }
                         }
+                        author {
+                            login
                         }
+                        authorAssociation
+                        state
                     }
                 }
             }
@@ -44,8 +49,20 @@ async function main() {
             forks {
                 totalCount
             }
-            pullRequests {
+            pullRequests(last:10) {
                 totalCount
+                edges {
+                    node {
+                        title
+                        createdAt
+                        mergedAt
+                        closedAt
+                        author {
+                            login
+                        }
+                        authorAssociation
+                    }
+                }
             }
         }
         rateLimit {
