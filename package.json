@@ -9,6 +9,7 @@
   "author": "Courtney Brousseau",
   "license": "CC0-1.0",
   "dependencies": {
+    "csv-writer": "^1.4.0",
     "dotenv": "^8.0.0",
     "graphql-request": "^1.8.2"
   }

@@ -13,6 +13,7 @@ async function queryGitHub(repoName) {
   const query = /* GraphQL */ `
     query GitHub($repo: String!) {
         repository(owner:"GSA", name:$repo) {
+            name
             issues(last:10) {
                 totalCount
                 edges {
@@ -100,6 +101,28 @@ async function queryGitHub(repoName) {
   return dataJSON;
 }
 
+function processRepo(repoData) {
+    var repoData = {
+        repo: repoData["repository"]["name"],
+        stars: getStarCount(repoData),
+        watches: getWatchCount(repoData),
+        forks: getForkCount(repoData)
+    };
+    return repoData;
+}
+
+function getStarCount(repoData) {
+    return repoData["repository"]["stargazers"]["totalCount"];
+}
+
+function getWatchCount(repoData) {
+    return repoData["repository"]["watchers"]["totalCount"];
+}
+
+function getForkCount(repoData) {
+    return repoData["repository"]["forks"]["totalCount"];
+}
+
 async function main() {
     data1 = await queryGitHub("code-gov-front-end").catch(error => console.error(error));
     console.log(data1);
@@ -108,6 +131,24 @@ async function main() {
     console.log(data2);
     console.log(data1["repository"]["stargazers"]["totalCount"]);
     console.log(data2["repository"]["stargazers"]["totalCount"]);
+    
+
+    const createCsvWriter = require('csv-writer').createObjectCsvWriter;  
+    const csvWriter = createCsvWriter({  
+    path: 'out.csv',
+    header: [
+        {id: 'repo', title: 'Repo Name'},
+        {id: 'stars', title: 'Stars'},
+        {id: 'watches', title: 'Watches'},
+        {id: 'forks', title: 'Forks'},
+    ]
+    });
+
+    const data = [];
+    var processedRepo = processRepo(data1);
+    data.push(processedRepo);
+      
+    csvWriter.writeRecords(data).then(()=> console.log('The CSV file was written successfully'));
 }
 
 main();
