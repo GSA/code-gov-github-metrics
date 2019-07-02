@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { GraphQLClient } = require('graphql-request');
 
-async function main() {
+async function queryGitHub() {
   const endpoint = 'https://api.github.com/graphql'
 
   const graphQLClient = new GraphQLClient(endpoint, {
@@ -11,8 +11,8 @@ async function main() {
   })
 
   const query = /* GraphQL */ `
-    {
-        repository(owner:"GSA", name:"code-gov-front-end") {
+    query GitHub($repo: String!) {
+        repository(owner:"GSA", name:$repo) {
             issues(last:10) {
                 totalCount
                 edges {
@@ -34,12 +34,22 @@ async function main() {
                     }
                 }
             }
-            collaborators(last:10) {
+            collaborators(last:100) {
                 totalCount
                 edges {
                     node {
                         email
                         name
+                        organizations(first:100) {
+                            edges {
+                                node {
+                                    name
+                                }
+                            }
+                        }
+                        organization(login:GSA) {
+                            name
+                        }
                     }
                 }
             }
@@ -47,6 +57,9 @@ async function main() {
                 totalCount
             }
             forks {
+                totalCount
+            }
+            watchers {
                 totalCount
             }
             pullRequests(last:10) {
@@ -74,7 +87,13 @@ async function main() {
     }
   `
 
-  const dataJSON = await graphQLClient.request(query);
+  var repo = "code-gov-front-end";
+
+  const variables = {
+    repo: repo,
+  }
+
+  const dataJSON = await graphQLClient.request(query, variables);
   const dataString = JSON.stringify(dataJSON, undefined, 2);
   console.log(dataString);
 
@@ -82,4 +101,4 @@ async function main() {
   console.log(dataJSON["repository"]["issues"]["edges"][0]["node"]["title"]);
 }
 
-main().catch(error => console.error(error))
+queryGitHub().catch(error => console.error(error))
