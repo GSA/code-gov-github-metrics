@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { GraphQLClient } = require('graphql-request');
 
-async function queryGitHub() {
+async function queryGitHub(repoName) {
   const endpoint = 'https://api.github.com/graphql'
 
   const graphQLClient = new GraphQLClient(endpoint, {
@@ -87,18 +87,27 @@ async function queryGitHub() {
     }
   `
 
-  var repo = "code-gov-front-end";
-
   const variables = {
-    repo: repo,
+    repo: repoName
   }
 
   const dataJSON = await graphQLClient.request(query, variables);
   const dataString = JSON.stringify(dataJSON, undefined, 2);
-  console.log(dataString);
+  // console.log(dataString);
 
   // Log the name of the most recently closed issue in the code-gov-front-end
-  console.log(dataJSON["repository"]["issues"]["edges"][0]["node"]["title"]);
+  // console.log(dataJSON["repository"]["issues"]["edges"][0]["node"]["title"]);
+  return dataJSON;
 }
 
-queryGitHub().catch(error => console.error(error))
+async function main() {
+    data1 = await queryGitHub("code-gov-front-end").catch(error => console.error(error));
+    console.log(data1);
+    data2 = await queryGitHub("code-gov-data").catch(error => console.error(error));
+    console.log(data1);
+    console.log(data2);
+    console.log(data1["repository"]["stargazers"]["totalCount"]);
+    console.log(data2["repository"]["stargazers"]["totalCount"]);
+}
+
+main();
