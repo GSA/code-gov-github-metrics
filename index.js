@@ -120,14 +120,11 @@ async function fetchGitHubData() {
         var data = repoData.map(repoData => processRepo(repoData));
         console.log(data.length);
         console.log(repos.length);
-        return data;
+        writeCSV(data);
     });
 }
 
-async function writeCSV() {
-    var data = fetchGitHubData();
-    // console.log(data);
-    
+async function writeCSV(data) {
     const createCsvWriter = require('csv-writer').createObjectCsvWriter;  
     const csvWriter = createCsvWriter({  
     path: 'out.csv',
@@ -139,10 +136,7 @@ async function writeCSV() {
     ]
     });
 
-    await data;
-    data.then(console.log(data));
-    data.then(csvWriter.writeRecords(data));
-    // csvWriter.writeRecords(data).then(()=> console.log('The CSV file was written successfully'));
+    csvWriter.writeRecords(data).then(()=> console.log('The CSV file was written successfully'));
 }
 
-writeCSV();
+fetchGitHubData();
