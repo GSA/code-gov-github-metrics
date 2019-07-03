@@ -35,25 +35,6 @@ async function queryGitHub(repoName) {
                     }
                 }
             }
-            collaborators(last:100) {
-                totalCount
-                edges {
-                    node {
-                        email
-                        name
-                        organizations(first:100) {
-                            edges {
-                                node {
-                                    name
-                                }
-                            }
-                        }
-                        organization(login:GSA) {
-                            name
-                        }
-                    }
-                }
-            }
             stargazers {
                 totalCount
             }
@@ -123,16 +104,30 @@ function getForkCount(repoData) {
     return repoData["repository"]["forks"]["totalCount"];
 }
 
-async function main() {
-    data1 = await queryGitHub("code-gov-front-end").catch(error => console.error(error));
-    console.log(data1);
-    data2 = await queryGitHub("code-gov-data").catch(error => console.error(error));
-    console.log(data1);
-    console.log(data2);
-    console.log(data1["repository"]["stargazers"]["totalCount"]);
-    console.log(data2["repository"]["stargazers"]["totalCount"]);
-    
+async function fetchGitHubData() {
+    repos = ["code-gov", "code-gov-front-end", "code-gov-api", "code-gov-api-client", "code-gov-font", "code-gov-harvester", "code-gov-developer-docs", "code-gov-style", "code-gov-adapters", "code-gov-validator", "code-gov-integrations", "json-schema-web-component", "json-schema-validator-web-component", "code-gov-about-page", "code-gov-fscp-react-component", "code-gov-data"];
 
+    var githubPromise;
+    var promises = [];
+
+    repos.forEach(async function(repo) {
+        console.log(repo);
+        githubPromise = queryGitHub(repo).catch(error => console.error(error));
+        promises.push(githubPromise);
+    });
+
+    Promise.all(promises).then(function(repoData) {
+        var data = repoData.map(repoData => processRepo(repoData));
+        console.log(data.length);
+        console.log(repos.length);
+        return data;
+    });
+}
+
+async function writeCSV() {
+    var data = fetchGitHubData();
+    // console.log(data);
+    
     const createCsvWriter = require('csv-writer').createObjectCsvWriter;  
     const csvWriter = createCsvWriter({  
     path: 'out.csv',
@@ -144,11 +139,10 @@ async function main() {
     ]
     });
 
-    const data = [];
-    var processedRepo = processRepo(data1);
-    data.push(processedRepo);
-      
-    csvWriter.writeRecords(data).then(()=> console.log('The CSV file was written successfully'));
+    await data;
+    data.then(console.log(data));
+    data.then(csvWriter.writeRecords(data));
+    // csvWriter.writeRecords(data).then(()=> console.log('The CSV file was written successfully'));
 }
 
-main();
+writeCSV();
