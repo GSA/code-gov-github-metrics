@@ -74,11 +74,6 @@ async function queryGitHub(repoName) {
   }
 
   const dataJSON = await graphQLClient.request(query, variables);
-  const dataString = JSON.stringify(dataJSON, undefined, 2);
-  // console.log(dataString);
-
-  // Log the name of the most recently closed issue in the code-gov-front-end
-  // console.log(dataJSON["repository"]["issues"]["edges"][0]["node"]["title"]);
   return dataJSON;
 }
 
@@ -118,8 +113,6 @@ async function fetchGitHubData() {
 
     Promise.all(promises).then(function(repoData) {
         var data = repoData.map(repoData => processRepo(repoData));
-        console.log(data.length);
-        console.log(repos.length);
         writeCSV(data);
     });
 }
