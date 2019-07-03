@@ -87,6 +87,16 @@ function processRepo(repoData) {
     return repoData;
 }
 
+function aggregateRepoData(repos) {
+    var repoData = {
+        repo: "TOTAL",
+        stars: repos.map(repo => repo["stars"]).reduce((a, b) => a + b, 0),
+        watches: repos.map(repo => repo["watches"]).reduce((a, b) => a + b, 0),
+        forks: repos.map(repo => repo["forks"]).reduce((a, b) => a + b, 0)
+    };
+    return repoData;
+}
+
 function getStarCount(repoData) {
     return repoData["repository"]["stargazers"]["totalCount"];
 }
@@ -111,8 +121,10 @@ async function fetchGitHubData() {
         promises.push(githubPromise);
     });
 
-    Promise.all(promises).then(function(repoData) {
-        var data = repoData.map(repoData => processRepo(repoData));
+    Promise.all(promises).then(function(repos) {
+        var data = repos.map(repoData => processRepo(repoData));
+        var aggregatedData = aggregateRepoData(data);
+        data.push(aggregatedData);
         writeCSV(data);
     });
 }
@@ -129,7 +141,7 @@ async function writeCSV(data) {
     ]
     });
 
-    csvWriter.writeRecords(data).then(()=> console.log('The CSV file was written successfully'));
+    csvWriter.writeRecords(data).then(() => console.log('The CSV file was written successfully'));
 }
 
 fetchGitHubData();
