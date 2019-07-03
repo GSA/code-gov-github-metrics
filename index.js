@@ -3,19 +3,19 @@ const { GraphQLClient } = require('graphql-request');
 var CONFIG = require('./config.json');
 
 async function queryGitHub(repoName) {
-  const endpoint = 'https://api.github.com/graphql'
+    const endpoint = 'https://api.github.com/graphql'
 
-  const graphQLClient = new GraphQLClient(endpoint, {
+    const graphQLClient = new GraphQLClient(endpoint, {
     headers: {
-      authorization: 'Bearer ' + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
+        authorization: 'Bearer ' + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
     },
-  })
+    })
 
-  const query = /* GraphQL */ `
+    const query = /* GraphQL */ `
     query GitHub($repo: String!) {
         repository(owner:"GSA", name:$repo) {
             name
-            issues(last:10) {
+            issues(first:2) {
                 totalCount
                 edges {
                     node {
@@ -34,6 +34,11 @@ async function queryGitHub(repoName) {
                         authorAssociation
                         state
                     }
+                }
+                pageInfo {
+                    startCursor
+                    hasNextPage
+                    endCursor
                 }
             }
             stargazers {
@@ -68,15 +73,88 @@ async function queryGitHub(repoName) {
             resetAt
         }
     }
-  `
+    `
 
-  const variables = {
-    repo: repoName
-  }
+    const variables = {
+        repo: repoName
+    };
 
-  const dataJSON = await graphQLClient.request(query, variables);
-  return dataJSON;
+    const dataJSON = await graphQLClient.request(query, variables);
+
+    console.log("hasNextPage", dataJSON.repository.issues.pageInfo.hasNextPage)
+    if (dataJSON.repository.issues.pageInfo.hasNextPage) {
+        var issues = await queryIssuesDeep(repoName, dataJSON.repository.issues.pageInfo.endCursor, dataJSON.repository.issues.edges);
+        dataJSON.repository.issues.edges = issues;
+    }
+    console.log(dataJSON.repository.issues.edges);
+
+    return dataJSON;
 }
+
+async function queryIssuesDeep(repoName, cursor, issues) {
+    console.log("cursor", cursor)
+    const endpoint = 'https://api.github.com/graphql'
+  
+    const graphQLClient = new GraphQLClient(endpoint, {
+      headers: {
+        authorization: 'Bearer ' + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
+      },
+    })
+  
+    const query = /* GraphQL */ `
+        query GitHub($repo: String!, $cursor: String!) {
+            repository(owner:"GSA", name:$repo) {
+                name
+                issues(first:2, after:$cursor) {
+                    totalCount
+                    edges {
+                        node {
+                            title
+                            url
+                            labels(first:5) {
+                                edges {
+                                    node {
+                                        name
+                                    }
+                                }
+                            }
+                            author {
+                                login
+                            }
+                            authorAssociation
+                            state
+                        }
+                    }
+                    pageInfo {
+                        startCursor
+                        hasNextPage
+                        endCursor
+                    }
+                }
+            }  
+            rateLimit {
+                limit
+                cost
+                remaining
+                resetAt
+            }
+        }
+    `
+  
+    const variables = {
+        repo: repoName,
+        cursor: cursor
+    };
+  
+    const dataJSON = await graphQLClient.request(query, variables);
+    dataJSON.repository.issues.edges.forEach(issue => {issues.push(issue)});
+
+    if (dataJSON.repository.issues.pageInfo.hasNextPage) {
+        return await queryIssuesDeep(repoName, dataJSON.repository.issues.pageInfo.endCursor, issues);
+    }
+
+    return issues;
+  }
 
 function processRepo(repoData) {
     var repoData = {
