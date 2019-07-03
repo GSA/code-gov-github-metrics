@@ -15,25 +15,23 @@ async function queryGitHub(repoName) {
     query GitHub($repo: String!) {
         repository(owner:"GSA", name:$repo) {
             name
-            issues(first:2) {
+            issues(first:100) {
                 totalCount
-                edges {
-                    node {
-                        title
-                        url
-                        labels(first:5) {
-                            edges {
-                                node {
-                                    name
-                                }
+                nodes {
+                    title
+                    url
+                    labels(first:5) {
+                        edges {
+                            node {
+                                name
                             }
                         }
-                        author {
-                            login
-                        }
-                        authorAssociation
-                        state
                     }
+                    author {
+                        login
+                    }
+                    authorAssociation
+                    state
                 }
                 pageInfo {
                     startCursor
@@ -83,7 +81,7 @@ async function queryGitHub(repoName) {
 
     console.log("hasNextPage", dataJSON.repository.issues.pageInfo.hasNextPage)
     if (dataJSON.repository.issues.pageInfo.hasNextPage) {
-        var issues = await queryIssuesDeep(repoName, dataJSON.repository.issues.pageInfo.endCursor, dataJSON.repository.issues.edges);
+        var issues = await queryIssuesDeep(repoName, dataJSON.repository.issues.pageInfo.endCursor, dataJSON.repository.issues.nodes);
         dataJSON.repository.issues.edges = issues;
     }
     console.log(dataJSON.repository.issues.edges);
@@ -105,24 +103,31 @@ async function queryIssuesDeep(repoName, cursor, issues) {
         query GitHub($repo: String!, $cursor: String!) {
             repository(owner:"GSA", name:$repo) {
                 name
-                issues(first:2, after:$cursor) {
+                issues(first:100, after:$cursor) {
                     totalCount
-                    edges {
-                        node {
-                            title
-                            url
-                            labels(first:5) {
-                                edges {
-                                    node {
-                                        name
-                                    }
+                    nodes {
+                        title
+                        url
+                        labels(first:5) {
+                            edges {
+                                node {
+                                    name
                                 }
                             }
-                            author {
-                                login
+                        }
+                        author {
+                            login
+                        }
+                        authorAssociation
+                        state
+                        timeline(last:1) {
+                            nodes { 
+                                __typename
+                                ... on CrossReferencedEvent {
+                                    createdAt
+                                    id
+                                }
                             }
-                            authorAssociation
-                            state
                         }
                     }
                     pageInfo {
@@ -147,7 +152,8 @@ async function queryIssuesDeep(repoName, cursor, issues) {
     };
   
     const dataJSON = await graphQLClient.request(query, variables);
-    dataJSON.repository.issues.edges.forEach(issue => {issues.push(issue)});
+    console.log("HERE: ", issues);
+    dataJSON.repository.issues.nodes.forEach(issue => {issues.push(issue)});
 
     if (dataJSON.repository.issues.pageInfo.hasNextPage) {
         return await queryIssuesDeep(repoName, dataJSON.repository.issues.pageInfo.endCursor, issues);
@@ -161,7 +167,9 @@ function processRepo(repoData) {
         repo: repoData["repository"]["name"],
         stars: getStarCount(repoData),
         watches: getWatchCount(repoData),
-        forks: getForkCount(repoData)
+        forks: getForkCount(repoData),
+        issues: getIssueCount(repoData),
+        openIssues: getOpenIssueCount(repoData)
     };
     return repoData;
 }
@@ -169,23 +177,38 @@ function processRepo(repoData) {
 function aggregateRepoData(repos) {
     var repoData = {
         repo: "TOTAL",
-        stars: repos.map(repo => repo["stars"]).reduce((a, b) => a + b, 0),
-        watches: repos.map(repo => repo["watches"]).reduce((a, b) => a + b, 0),
-        forks: repos.map(repo => repo["forks"]).reduce((a, b) => a + b, 0)
+        stars: repos.map(repo => repo.stars).reduce((a, b) => a + b, 0),
+        watches: repos.map(repo => repo.watches).reduce((a, b) => a + b, 0),
+        forks: repos.map(repo => repo.forks).reduce((a, b) => a + b, 0),
+        issues: repos.map(repo => repo.issues).reduce((a, b) => a + b, 0)
     };
     return repoData;
 }
 
 function getStarCount(repoData) {
-    return repoData["repository"]["stargazers"]["totalCount"];
+    return repoData.repository.stargazers.totalCount;
 }
 
 function getWatchCount(repoData) {
-    return repoData["repository"]["watchers"]["totalCount"];
+    return repoData.repository.watchers.totalCount;
 }
 
 function getForkCount(repoData) {
-    return repoData["repository"]["forks"]["totalCount"];
+    return repoData.repository.forks.totalCount;
+}
+
+function getIssueCount(repoData) {
+    return repoData.repository.issues.totalCount;
+}
+
+function getOpenIssueCount(repoData) {
+    var issuesOpen = 0;
+    repoData.repository.issues.nodes.forEach(function(issue) {
+        if (issue.state === "OPEN") {
+            issuesOpen += 1;
+        }
+    });
+    return issuesOpen;
 }
 
 async function fetchGitHubData() {
@@ -216,6 +239,8 @@ async function writeCSV(data) {
         {id: 'stars', title: 'Stars'},
         {id: 'watches', title: 'Watches'},
         {id: 'forks', title: 'Forks'},
+        {id: 'issues', title: 'Issues'},
+        {id: 'openIssues', title: 'Open Issues'}
     ]
     });
 
