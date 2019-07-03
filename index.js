@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { GraphQLClient } = require('graphql-request');
+var CONFIG = require('./config.json');
 
 async function queryGitHub(repoName) {
   const endpoint = 'https://api.github.com/graphql'
@@ -110,8 +111,7 @@ function getForkCount(repoData) {
 }
 
 async function fetchGitHubData() {
-    repos = ["code-gov", "code-gov-front-end", "code-gov-api", "code-gov-api-client", "code-gov-font", "code-gov-harvester", "code-gov-developer-docs", "code-gov-style", "code-gov-adapters", "code-gov-validator", "code-gov-integrations", "json-schema-web-component", "json-schema-validator-web-component", "code-gov-about-page", "code-gov-fscp-react-component", "code-gov-data"];
-
+    repos = CONFIG.repoList;
     var githubPromise;
     var promises = [];
 
