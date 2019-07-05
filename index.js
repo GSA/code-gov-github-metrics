@@ -19,6 +19,7 @@ async function queryGitHub(repoName) {
                 totalCount
                 nodes {
                     title
+                    createdAt
                     url
                     labels(first:5) {
                         edges {
@@ -118,6 +119,7 @@ async function queryIssuesDeep(repoName, cursor, issues) {
                         author {
                             login
                         }
+                        createdAt
                         authorAssociation
                         state
                         timeline(last:1) {
@@ -164,7 +166,7 @@ async function queryIssuesDeep(repoName, cursor, issues) {
 
 function processRepo(repoData) {
     var repoData = {
-        repo: repoData["repository"]["name"],
+        repo: repoData.repository.name,
         stars: getStarCount(repoData),
         watches: getWatchCount(repoData),
         forks: getForkCount(repoData),
