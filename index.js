@@ -220,24 +220,27 @@ async function queryPullRequestsDeep(repoName, cursor, pullRequests) {
 }
 
 function processRepo(repo) {
+    var issueMetaData = getIssueMetaData(repo);
+    var pullRequestMetaData = getPullRequestMetaData(repo);
     var repoData = {
         repo: repo.repository.name,
         stars: getStarCount(repo),
         watches: getWatchCount(repo),
         forks: getForkCount(repo),
         issues: getIssueCount(repo),
-        openIssues: getIssueMetaData(repo)[0],
-        openedIssues: getIssueMetaData(repo)[1],
-        closedIssues: getIssueMetaData(repo)[2],
-        averageIssueOpenTime: getIssueMetaData(repo)[3],
+        openIssues: issueMetaData[0],
+        openedIssues: issueMetaData[1],
+        closedIssues: issueMetaData[2],
+        averageIssueOpenTime: issueMetaData[3],
         pullRequests: getPullRequestCount(repo),
-        openPullRequests: getPullRequestMetaData(repo)[0],
-        openedPullRequests: getPullRequestMetaData(repo)[1],
-        internalPullRequestsOpened: getPullRequestMetaData(repo)[2],
-        externalPullRequestsOpened: getPullRequestMetaData(repo)[3],
-        firstTimeContributorPullRequestsOpened: getPullRequestMetaData(repo)[4],
-        mergedPullRequests: getPullRequestMetaData(repo)[5],
-        closedPullRequests: getPullRequestMetaData(repo)[6]
+        openPullRequests: pullRequestMetaData[0],
+        openedPullRequests: pullRequestMetaData[1],
+        internalPullRequestsOpened: pullRequestMetaData[2],
+        externalPullRequestsOpened: pullRequestMetaData[3],
+        firstTimeContributorPullRequestsOpened: pullRequestMetaData[4],
+        mergedPullRequests: pullRequestMetaData[5],
+        closedPullRequests: pullRequestMetaData[6],
+        averagePullRequestMergeTime: pullRequestMetaData[7],
     };
     return repoData;
 }
@@ -319,6 +322,7 @@ function getPullRequestMetaData(repoData) {
     var firstTimeContributorPullRequestsOpened = 0;
     var pullRequestsMerged = 0;
     var pullRequestsClosed = 0;
+    var openTimes = [];
     repoData.repository.pullRequests.nodes.forEach(function(pullRequest) {
         if (pullRequest.state === "OPEN") {
             pullRequestsOpen += 1;
@@ -341,6 +345,9 @@ function getPullRequestMetaData(repoData) {
             if (timeMerged > START_TIME && timeMerged < END_TIME) {
                 pullRequestsMerged += 1;
             }
+            // Time open in days
+            var timeOpen = (timeMerged - timeCreated) / 1000 / 60 / 60 / 24;
+            openTimes.push(timeOpen);
         }
         if (pullRequest.closedAt && pullRequest.state === "CLOSED") {
             var timeClosed = new Date(pullRequest.closedAt);
@@ -349,7 +356,8 @@ function getPullRequestMetaData(repoData) {
             }
         }
     });
-    return [pullRequestsOpen, pullRequestsOpened, internalPullRequestsOpened, externalPullRequestsOpened, firstTimeContributorPullRequestsOpened, pullRequestsMerged, pullRequestsClosed];
+    var averageOpenTime = openTimes.reduce((a, b) => a + b, 0) / openTimes.length;
+    return [pullRequestsOpen, pullRequestsOpened, internalPullRequestsOpened, externalPullRequestsOpened, firstTimeContributorPullRequestsOpened, pullRequestsMerged, pullRequestsClosed, averageOpenTime];
 }
 
 async function fetchGitHubData() {
@@ -393,6 +401,7 @@ async function writeCSV(data) {
             {id: 'firstTimeContributorPullRequestsOpened', title: 'First Time Contributor Opened Pull Requests'},
             {id: 'mergedPullRequests', title: 'Merged Pull Requests'},
             {id: 'closedPullRequests', title: 'Closed Pull Requests'},
+            {id: 'averagePullRequestMergeTime', title: 'Average Pull Request Time to Merge'}
         ]
     });
 
