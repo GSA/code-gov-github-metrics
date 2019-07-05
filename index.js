@@ -263,7 +263,7 @@ async function fetchGitHubData() {
 async function writeCSV(data) {
     const createCsvWriter = require('csv-writer').createObjectCsvWriter;  
     const csvWriter = createCsvWriter({  
-        path: 'out.csv',
+        path: 'repoData.csv',
         header: [
             {id: 'repo', title: 'Repo Name'},
             {id: 'stars', title: 'Stars'},
@@ -274,7 +274,7 @@ async function writeCSV(data) {
             {id: 'openedIssues', title: 'Opened Issues'},
             {id: 'closedIssues', title: 'Closed Issues'},
             {id: 'staleIssues', title: 'Stale Issues'},
-            {id: 'averageIssueOpenTime', title: 'Average Issue Open Time'},
+            {id: 'averageIssueOpenTime', title: 'Average Issue Open Time (Days)'},
             {id: 'pullRequests', title: 'Pull Requests'},
             {id: 'openPullRequests', title: 'Open Pull Requests'},
             {id: 'openedPullRequests', title: 'Opened Pull Requests'},
@@ -283,7 +283,7 @@ async function writeCSV(data) {
             {id: 'firstTimeContributorPullRequestsOpened', title: 'First Time Contributor Opened Pull Requests'},
             {id: 'mergedPullRequests', title: 'Merged Pull Requests'},
             {id: 'closedPullRequests', title: 'Closed Pull Requests'},
-            {id: 'averagePullRequestMergeTime', title: 'Average Pull Request Time to Merge'}
+            {id: 'averagePullRequestMergeTime', title: 'Average Pull Request Time to Merge (Days)'}
         ]
     });
 
