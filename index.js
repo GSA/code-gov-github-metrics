@@ -40,6 +40,9 @@ async function queryGitHub(repoName) {
                     endCursor
                 }
             }
+            pullRequests(first:100) {
+                totalCount
+            }
             stargazers {
                 totalCount
             }
@@ -48,21 +51,6 @@ async function queryGitHub(repoName) {
             }
             watchers {
                 totalCount
-            }
-            pullRequests(last:10) {
-                totalCount
-                edges {
-                    node {
-                        title
-                        createdAt
-                        mergedAt
-                        closedAt
-                        author {
-                            login
-                        }
-                        authorAssociation
-                    }
-                }
             }
         }
         rateLimit {
@@ -172,6 +160,7 @@ function processRepo(repoData) {
         openedIssues: getIssueMetaData(repoData)[1],
         closedIssues: getIssueMetaData(repoData)[2],
         averageIssueOpenTime: getIssueMetaData(repoData)[3],
+        pullRequests: getPullRequestCount(repoData)
     };
     return repoData;
 }
@@ -186,6 +175,7 @@ function aggregateRepoData(repos) {
         openIssues: repos.map(repo => repo.openIssues).reduce((a, b) => a + b, 0),
         openedIssues: repos.map(repo => repo.openedIssues).reduce((a, b) => a + b, 0),
         closedIssues: repos.map(repo => repo.closedIssues).reduce((a, b) => a + b, 0),
+        pullRequests: repos.map(repo => repo.pullRequests).reduce((a, b) => a + b, 0),
     };
     return repoData;
 }
@@ -204,6 +194,10 @@ function getForkCount(repoData) {
 
 function getIssueCount(repoData) {
     return repoData.repository.issues.totalCount;
+}
+
+function getPullRequestCount(repoData) {
+    return repoData.repository.pullRequests.totalCount;
 }
 
 function getIssueMetaData(repoData) {
@@ -225,7 +219,7 @@ function getIssueMetaData(repoData) {
             if (timeClosed > START_TIME && timeClosed < END_TIME) {
                 issuesClosed += 1;
             }
-            // Time Open in Days
+            // Time open in days
             var timeOpen = (timeClosed - timeCreated) / 1000 / 60 / 60 / 24;
             openTimes.push(timeOpen);
         }
@@ -266,14 +260,15 @@ async function writeCSV(data) {
         {id: 'openIssues', title: 'Open Issues'},
         {id: 'openedIssues', title: 'Opened Issues'},
         {id: 'closedIssues', title: 'Closed Issues'},
-        {id: 'averageIssueOpenTime', title: 'Average Issue Open Time'}
+        {id: 'averageIssueOpenTime', title: 'Average Issue Open Time'},
+        {id: 'pullRequests', title: 'Pull Requests'}
     ]
     });
 
     csvWriter.writeRecords(data).then(() => console.log('The CSV file was written successfully'));
 }
 
-// Get start and end Times from the command line arguments
+// Get start and end times from the command line arguments
 const START_TIME = new Date(process.argv[2]);
 const END_TIME = new Date(process.argv[3]);
 
