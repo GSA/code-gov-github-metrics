@@ -44,6 +44,9 @@ async function queryGitHub(repoName) {
                 totalCount
                 nodes {
                     createdAt
+                    state
+                    mergedAt
+                    closedAt
                 }
                 pageInfo {
                     startCursor
@@ -179,6 +182,9 @@ async function queryPullRequestsDeep(repoName, cursor, pullRequests) {
                     totalCount
                     nodes {
                         createdAt
+                        state
+                        mergedAt
+                        closedAt
                     }
                     pageInfo {
                         startCursor
@@ -211,24 +217,28 @@ async function queryPullRequestsDeep(repoName, cursor, pullRequests) {
     return pullRequests;
 }
 
-function processRepo(repoData) {
+function processRepo(repo) {
     var repoData = {
-        repo: repoData.repository.name,
-        stars: getStarCount(repoData),
-        watches: getWatchCount(repoData),
-        forks: getForkCount(repoData),
-        issues: getIssueCount(repoData),
-        openIssues: getIssueMetaData(repoData)[0],
-        openedIssues: getIssueMetaData(repoData)[1],
-        closedIssues: getIssueMetaData(repoData)[2],
-        averageIssueOpenTime: getIssueMetaData(repoData)[3],
-        pullRequests: getPullRequestCount(repoData)
+        repo: repo.repository.name,
+        stars: getStarCount(repo),
+        watches: getWatchCount(repo),
+        forks: getForkCount(repo),
+        issues: getIssueCount(repo),
+        openIssues: getIssueMetaData(repo)[0],
+        openedIssues: getIssueMetaData(repo)[1],
+        closedIssues: getIssueMetaData(repo)[2],
+        averageIssueOpenTime: getIssueMetaData(repo)[3],
+        pullRequests: getPullRequestCount(repo),
+        openPullRequests: getPullRequestMetaData(repo)[0],
+        openedPullRequests: getPullRequestMetaData(repo)[1],
+        mergedPullRequests: getPullRequestMetaData(repo)[2],
+        closedPullRequests: getPullRequestMetaData(repo)[3]
     };
     return repoData;
 }
 
 function aggregateRepoData(repos) {
-    var repoData = {
+    var totalData = {
         repo: "TOTAL",
         stars: repos.map(repo => repo.stars).reduce((a, b) => a + b, 0),
         watches: repos.map(repo => repo.watches).reduce((a, b) => a + b, 0),
@@ -239,7 +249,7 @@ function aggregateRepoData(repos) {
         closedIssues: repos.map(repo => repo.closedIssues).reduce((a, b) => a + b, 0),
         pullRequests: repos.map(repo => repo.pullRequests).reduce((a, b) => a + b, 0),
     };
-    return repoData;
+    return totalData;
 }
 
 function getStarCount(repoData) {
@@ -289,6 +299,35 @@ function getIssueMetaData(repoData) {
     return [issuesOpen, issuesOpened, issuesClosed, averageOpenTime];
 }
 
+function getPullRequestMetaData(repoData) {
+    var pullRequestsOpen = 0;
+    var pullRequestsOpened = 0;
+    var pullRequestsMerged = 0;
+    var pullRequestsClosed = 0;
+    repoData.repository.pullRequests.nodes.forEach(function(pullRequest) {
+        if (pullRequest.state === "OPEN") {
+            pullRequestsOpen += 1;
+        }
+        var timeCreated = new Date(pullRequest.createdAt);
+        if (timeCreated > START_TIME && timeCreated < END_TIME) {
+            pullRequestsOpened += 1;
+        }
+        if (pullRequest.mergedAt && pullRequest.state === "MERGED") {
+            var timeMerged = new Date(pullRequest.mergedAt);
+            if (timeMerged > START_TIME && timeMerged < END_TIME) {
+                pullRequestsMerged += 1;
+            }
+        }
+        if (pullRequest.closedAt && pullRequest.state === "CLOSED") {
+            var timeClosed = new Date(pullRequest.closedAt);
+            if (timeClosed > START_TIME && timeClosed < END_TIME) {
+                pullRequestsClosed += 1;
+            }
+        }
+    });
+    return [pullRequestsOpen, pullRequestsOpened, pullRequestsMerged, pullRequestsClosed];
+}
+
 async function fetchGitHubData() {
     repos = CONFIG.repoList;
     var githubPromise;
@@ -322,7 +361,11 @@ async function writeCSV(data) {
         {id: 'openedIssues', title: 'Opened Issues'},
         {id: 'closedIssues', title: 'Closed Issues'},
         {id: 'averageIssueOpenTime', title: 'Average Issue Open Time'},
-        {id: 'pullRequests', title: 'Pull Requests'}
+        {id: 'pullRequests', title: 'Pull Requests'},
+        {id: 'openPullRequests', title: 'Open Pull Requests'},
+        {id: 'openedPullRequests', title: 'Opened Pull Requests'},
+        {id: 'mergedPullRequests', title: 'Merged Pull Requests'},
+        {id: 'closedPullRequests', title: 'Closed Pull Requests'},
     ]
     });
 
