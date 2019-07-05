@@ -3,7 +3,7 @@ const { GraphQLClient } = require('graphql-request');
 var CONFIG = require('./config.json');
 
 async function queryGitHub(repoName) {
-    const endpoint = 'https://api.github.com/graphql'
+    const endpoint = 'https://api.github.com/graphql';
 
     const graphQLClient = new GraphQLClient(endpoint, {
     headers: {
@@ -80,19 +80,16 @@ async function queryGitHub(repoName) {
 
     const dataJSON = await graphQLClient.request(query, variables);
 
-    console.log("hasNextPage", dataJSON.repository.issues.pageInfo.hasNextPage)
     if (dataJSON.repository.issues.pageInfo.hasNextPage) {
         var issues = await queryIssuesDeep(repoName, dataJSON.repository.issues.pageInfo.endCursor, dataJSON.repository.issues.nodes);
         dataJSON.repository.issues.edges = issues;
     }
-    console.log(dataJSON.repository.issues.edges);
 
     return dataJSON;
 }
 
 async function queryIssuesDeep(repoName, cursor, issues) {
-    console.log("cursor", cursor)
-    const endpoint = 'https://api.github.com/graphql'
+    const endpoint = 'https://api.github.com/graphql';
   
     const graphQLClient = new GraphQLClient(endpoint, {
       headers: {
@@ -120,6 +117,7 @@ async function queryIssuesDeep(repoName, cursor, issues) {
                             login
                         }
                         createdAt
+                        closedAt
                         authorAssociation
                         state
                         timeline(last:1) {
@@ -154,7 +152,6 @@ async function queryIssuesDeep(repoName, cursor, issues) {
     };
   
     const dataJSON = await graphQLClient.request(query, variables);
-    console.log("HERE: ", issues);
     dataJSON.repository.issues.nodes.forEach(issue => {issues.push(issue)});
 
     if (dataJSON.repository.issues.pageInfo.hasNextPage) {
@@ -171,8 +168,9 @@ function processRepo(repoData) {
         watches: getWatchCount(repoData),
         forks: getForkCount(repoData),
         issues: getIssueCount(repoData),
-        openIssues: getOpenClosedIssueCount(repoData)[0],
-        closedIssues: getOpenClosedIssueCount(repoData)[1]
+        openIssues: getOpenIssueCount(repoData),
+        openedIssues: getOpenedClosedIssueCount(repoData)[0],
+        closedIssues: getOpenedClosedIssueCount(repoData)[1],
     };
     return repoData;
 }
@@ -185,7 +183,8 @@ function aggregateRepoData(repos) {
         forks: repos.map(repo => repo.forks).reduce((a, b) => a + b, 0),
         issues: repos.map(repo => repo.issues).reduce((a, b) => a + b, 0),
         openIssues: repos.map(repo => repo.openIssues).reduce((a, b) => a + b, 0),
-        closedIssues: repos.map(repo => repo.closedIssues).reduce((a, b) => a + b, 0)
+        openedIssues: repos.map(repo => repo.openedIssues).reduce((a, b) => a + b, 0),
+        closedIssues: repos.map(repo => repo.closedIssues).reduce((a, b) => a + b, 0),
     };
     return repoData;
 }
@@ -206,18 +205,30 @@ function getIssueCount(repoData) {
     return repoData.repository.issues.totalCount;
 }
 
-function getOpenClosedIssueCount(repoData) {
+function getOpenIssueCount(repoData) {
     var issuesOpen = 0;
-    var issuesClosed = 0;
     repoData.repository.issues.nodes.forEach(function(issue) {
         if (issue.state === "OPEN") {
             issuesOpen += 1;
         }
-        if (issue.state === "CLOSED") {
+    });
+    return issuesOpen;
+}
+
+function getOpenedClosedIssueCount(repoData) {
+    var issuesOpened = 0;
+    var issuesClosed = 0;
+    repoData.repository.issues.nodes.forEach(function(issue) {
+        var timeCreated = new Date(issue.createdAt);
+        var timeClosed = new Date(issue.closedAt);
+        if (timeCreated > START_TIME && timeCreated < END_TIME) {
+            issuesOpened += 1;
+        }
+        if (timeClosed > START_TIME && timeClosed < END_TIME) {
             issuesClosed += 1;
         }
     });
-    return [issuesOpen, issuesClosed];
+    return [issuesOpened, issuesClosed];
 }
 
 async function fetchGitHubData() {
@@ -250,11 +261,15 @@ async function writeCSV(data) {
         {id: 'forks', title: 'Forks'},
         {id: 'issues', title: 'Issues'},
         {id: 'openIssues', title: 'Open Issues'},
+        {id: 'openedIssues', title: 'Opened Issues'},
         {id: 'closedIssues', title: 'Closed Issues'}
     ]
     });
 
     csvWriter.writeRecords(data).then(() => console.log('The CSV file was written successfully'));
 }
+
+const START_TIME = new Date(process.argv[2]);
+const END_TIME = new Date(process.argv[3]);
 
 fetchGitHubData();
