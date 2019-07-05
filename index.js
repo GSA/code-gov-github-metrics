@@ -47,6 +47,7 @@ async function queryGitHub(repoName) {
                     state
                     mergedAt
                     closedAt
+                    authorAssociation
                 }
                 pageInfo {
                     startCursor
@@ -185,6 +186,7 @@ async function queryPullRequestsDeep(repoName, cursor, pullRequests) {
                         state
                         mergedAt
                         closedAt
+                        authorAssociation
                     }
                     pageInfo {
                         startCursor
@@ -231,8 +233,11 @@ function processRepo(repo) {
         pullRequests: getPullRequestCount(repo),
         openPullRequests: getPullRequestMetaData(repo)[0],
         openedPullRequests: getPullRequestMetaData(repo)[1],
-        mergedPullRequests: getPullRequestMetaData(repo)[2],
-        closedPullRequests: getPullRequestMetaData(repo)[3]
+        internalPullRequestsOpened: getPullRequestMetaData(repo)[2],
+        externalPullRequestsOpened: getPullRequestMetaData(repo)[3],
+        firstTimeContributorPullRequestsOpened: getPullRequestMetaData(repo)[4],
+        mergedPullRequests: getPullRequestMetaData(repo)[5],
+        closedPullRequests: getPullRequestMetaData(repo)[6]
     };
     return repoData;
 }
@@ -250,6 +255,9 @@ function aggregateRepoData(repos) {
         pullRequests: repos.map(repo => repo.pullRequests).reduce((a, b) => a + b, 0),
         openPullRequests: repos.map(repo => repo.openPullRequests).reduce((a, b) => a + b, 0),
         openedPullRequests: repos.map(repo => repo.openedPullRequests).reduce((a, b) => a + b, 0),
+        internalPullRequestsOpened: repos.map(repo => repo.internalPullRequestsOpened).reduce((a, b) => a + b, 0),
+        externalPullRequestsOpened: repos.map(repo => repo.externalPullRequestsOpened).reduce((a, b) => a + b, 0),
+        firstTimeContributorPullRequestsOpened: repos.map(repo => repo.firstTimeContributorPullRequestsOpened).reduce((a, b) => a + b, 0),
         mergedPullRequests: repos.map(repo => repo.mergedPullRequests).reduce((a, b) => a + b, 0),
         closedPullRequests: repos.map(repo => repo.closedPullRequests).reduce((a, b) => a + b, 0),
     };
@@ -306,6 +314,9 @@ function getIssueMetaData(repoData) {
 function getPullRequestMetaData(repoData) {
     var pullRequestsOpen = 0;
     var pullRequestsOpened = 0;
+    var internalPullRequestsOpened = 0;
+    var externalPullRequestsOpened = 0;
+    var firstTimeContributorPullRequestsOpened = 0;
     var pullRequestsMerged = 0;
     var pullRequestsClosed = 0;
     repoData.repository.pullRequests.nodes.forEach(function(pullRequest) {
@@ -315,6 +326,15 @@ function getPullRequestMetaData(repoData) {
         var timeCreated = new Date(pullRequest.createdAt);
         if (timeCreated > START_TIME && timeCreated < END_TIME) {
             pullRequestsOpened += 1;
+            if (pullRequest.authorAssociation === "OWNER" || pullRequest.authorAssociation === "MEMBER" || pullRequest.authorAssociation === "COLLABORATOR") {
+                internalPullRequestsOpened += 1;
+            }
+            if (pullRequest.authorAssociation === "FIRST_TIMER" || pullRequest.authorAssociation === "FIRST_TIME_CONTRIBUTOR" || pullRequest.authorAssociation === "CONTRIBUTOR") {
+                externalPullRequestsOpened += 1;
+            }
+            if (pullRequest.authorAssociation === "FIRST_TIMER" || pullRequest.authorAssociation === "FIRST_TIME_CONTRIBUTOR"){
+                firstTimeContributorPullRequestsOpened += 1;
+            }
         }
         if (pullRequest.mergedAt && pullRequest.state === "MERGED") {
             var timeMerged = new Date(pullRequest.mergedAt);
@@ -329,7 +349,7 @@ function getPullRequestMetaData(repoData) {
             }
         }
     });
-    return [pullRequestsOpen, pullRequestsOpened, pullRequestsMerged, pullRequestsClosed];
+    return [pullRequestsOpen, pullRequestsOpened, internalPullRequestsOpened, externalPullRequestsOpened, firstTimeContributorPullRequestsOpened, pullRequestsMerged, pullRequestsClosed];
 }
 
 async function fetchGitHubData() {
@@ -354,23 +374,26 @@ async function fetchGitHubData() {
 async function writeCSV(data) {
     const createCsvWriter = require('csv-writer').createObjectCsvWriter;  
     const csvWriter = createCsvWriter({  
-    path: 'out.csv',
-    header: [
-        {id: 'repo', title: 'Repo Name'},
-        {id: 'stars', title: 'Stars'},
-        {id: 'watches', title: 'Watches'},
-        {id: 'forks', title: 'Forks'},
-        {id: 'issues', title: 'Issues'},
-        {id: 'openIssues', title: 'Open Issues'},
-        {id: 'openedIssues', title: 'Opened Issues'},
-        {id: 'closedIssues', title: 'Closed Issues'},
-        {id: 'averageIssueOpenTime', title: 'Average Issue Open Time'},
-        {id: 'pullRequests', title: 'Pull Requests'},
-        {id: 'openPullRequests', title: 'Open Pull Requests'},
-        {id: 'openedPullRequests', title: 'Opened Pull Requests'},
-        {id: 'mergedPullRequests', title: 'Merged Pull Requests'},
-        {id: 'closedPullRequests', title: 'Closed Pull Requests'},
-    ]
+        path: 'out.csv',
+        header: [
+            {id: 'repo', title: 'Repo Name'},
+            {id: 'stars', title: 'Stars'},
+            {id: 'watches', title: 'Watches'},
+            {id: 'forks', title: 'Forks'},
+            {id: 'issues', title: 'Issues'},
+            {id: 'openIssues', title: 'Open Issues'},
+            {id: 'openedIssues', title: 'Opened Issues'},
+            {id: 'closedIssues', title: 'Closed Issues'},
+            {id: 'averageIssueOpenTime', title: 'Average Issue Open Time'},
+            {id: 'pullRequests', title: 'Pull Requests'},
+            {id: 'openPullRequests', title: 'Open Pull Requests'},
+            {id: 'openedPullRequests', title: 'Opened Pull Requests'},
+            {id: 'internalPullRequestsOpened', title: 'Internal Opened Pull Requests'},
+            {id: 'externalPullRequestsOpened', title: 'External Opened Pull Requests'},
+            {id: 'firstTimeContributorPullRequestsOpened', title: 'First Time Contributor Opened Pull Requests'},
+            {id: 'mergedPullRequests', title: 'Merged Pull Requests'},
+            {id: 'closedPullRequests', title: 'Closed Pull Requests'},
+        ]
     });
 
     csvWriter.writeRecords(data).then(() => console.log('The CSV file was written successfully'));
