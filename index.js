@@ -248,6 +248,10 @@ function aggregateRepoData(repos) {
         openedIssues: repos.map(repo => repo.openedIssues).reduce((a, b) => a + b, 0),
         closedIssues: repos.map(repo => repo.closedIssues).reduce((a, b) => a + b, 0),
         pullRequests: repos.map(repo => repo.pullRequests).reduce((a, b) => a + b, 0),
+        openPullRequests: repos.map(repo => repo.openPullRequests).reduce((a, b) => a + b, 0),
+        openedPullRequests: repos.map(repo => repo.openedPullRequests).reduce((a, b) => a + b, 0),
+        mergedPullRequests: repos.map(repo => repo.mergedPullRequests).reduce((a, b) => a + b, 0),
+        closedPullRequests: repos.map(repo => repo.closedPullRequests).reduce((a, b) => a + b, 0),
     };
     return totalData;
 }
