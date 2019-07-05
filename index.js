@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { GraphQLClient } = require('graphql-request');
 var CONFIG = require('./config.json');
+var queries = require('./queries.js');
 
 async function queryGitHub(repoName) {
     const endpoint = 'https://api.github.com/graphql';
@@ -11,68 +12,7 @@ async function queryGitHub(repoName) {
         },
     });
 
-    const query = /* GraphQL */ `
-    query GitHub($repo: String!) {
-        repository(owner:"GSA", name:$repo) {
-            name
-            issues(first:100) {
-                totalCount
-                nodes {
-                    title
-                    createdAt
-                    url
-                    labels(first:5) {
-                        edges {
-                            node {
-                                name
-                            }
-                        }
-                    }
-                    author {
-                        login
-                    }
-                    authorAssociation
-                    state
-                }
-                pageInfo {
-                    startCursor
-                    hasNextPage
-                    endCursor
-                }
-            }
-            pullRequests(first:100) {
-                totalCount
-                nodes {
-                    createdAt
-                    state
-                    mergedAt
-                    closedAt
-                    authorAssociation
-                }
-                pageInfo {
-                    startCursor
-                    hasNextPage
-                    endCursor
-                }
-            }
-            stargazers {
-                totalCount
-            }
-            forks {
-                totalCount
-            }
-            watchers {
-                totalCount
-            }
-        }
-        rateLimit {
-            limit
-            cost
-            remaining
-            resetAt
-        }
-    }
-    `
+    const query = queries.mainQuery;
 
     const variables = {
         repo: repoName
@@ -102,54 +42,7 @@ async function queryIssuesDeep(repoName, cursor, issues) {
         },
     });
   
-    const query = /* GraphQL */ `
-        query GitHub($repo: String!, $cursor: String!) {
-            repository(owner:"GSA", name:$repo) {
-                name
-                issues(first:100, after:$cursor) {
-                    totalCount
-                    nodes {
-                        title
-                        url
-                        labels(first:5) {
-                            edges {
-                                node {
-                                    name
-                                }
-                            }
-                        }
-                        author {
-                            login
-                        }
-                        createdAt
-                        closedAt
-                        authorAssociation
-                        state
-                        timeline(last:1) {
-                            nodes { 
-                                __typename
-                                ... on CrossReferencedEvent {
-                                    createdAt
-                                    id
-                                }
-                            }
-                        }
-                    }
-                    pageInfo {
-                        startCursor
-                        hasNextPage
-                        endCursor
-                    }
-                }
-            }  
-            rateLimit {
-                limit
-                cost
-                remaining
-                resetAt
-            }
-        }
-    `
+    const query = queries.issuesQuery;
   
     const variables = {
         repo: repoName,
@@ -174,35 +67,8 @@ async function queryPullRequestsDeep(repoName, cursor, pullRequests) {
             authorization: 'Bearer ' + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
         },
     });
-  
-    const query = /* GraphQL */ `
-        query GitHub($repo: String!, $cursor: String!) {
-            repository(owner:"GSA", name:$repo) {
-                name
-                pullRequests(first:100, after:$cursor) {
-                    totalCount
-                    nodes {
-                        createdAt
-                        state
-                        mergedAt
-                        closedAt
-                        authorAssociation
-                    }
-                    pageInfo {
-                        startCursor
-                        hasNextPage
-                        endCursor
-                    }
-                }
-            }  
-            rateLimit {
-                limit
-                cost
-                remaining
-                resetAt
-            }
-        }
-    `
+
+    const query = queries.pullRequestsQuery;
   
     const variables = {
         repo: repoName,
