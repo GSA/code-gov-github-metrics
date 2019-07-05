@@ -6,10 +6,10 @@ async function queryGitHub(repoName) {
     const endpoint = 'https://api.github.com/graphql';
 
     const graphQLClient = new GraphQLClient(endpoint, {
-    headers: {
-        authorization: 'Bearer ' + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
-    },
-    })
+        headers: {
+            authorization: 'Bearer ' + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
+        },
+    });
 
     const query = /* GraphQL */ `
     query GitHub($repo: String!) {
@@ -80,10 +80,10 @@ async function queryIssuesDeep(repoName, cursor, issues) {
     const endpoint = 'https://api.github.com/graphql';
   
     const graphQLClient = new GraphQLClient(endpoint, {
-      headers: {
-        authorization: 'Bearer ' + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
-      },
-    })
+        headers: {
+            authorization: 'Bearer ' + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
+        },
+    });
   
     const query = /* GraphQL */ `
         query GitHub($repo: String!, $cursor: String!) {
@@ -147,7 +147,7 @@ async function queryIssuesDeep(repoName, cursor, issues) {
     }
 
     return issues;
-  }
+}
 
 function processRepo(repoData) {
     var repoData = {
@@ -215,7 +215,6 @@ function getIssueMetaData(repoData) {
         }
         if (issue.closedAt) {
             var timeClosed = new Date(issue.closedAt);
-            console.log(timeClosed - timeCreated);
             if (timeClosed > START_TIME && timeClosed < END_TIME) {
                 issuesClosed += 1;
             }
