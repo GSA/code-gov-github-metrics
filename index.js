@@ -97,7 +97,8 @@ function processRepo(repo) {
         openIssues: issueMetaData[0],
         openedIssues: issueMetaData[1],
         closedIssues: issueMetaData[2],
-        averageIssueOpenTime: issueMetaData[3],
+        staleIssues: issueMetaData[3],
+        averageIssueOpenTime: issueMetaData[4],
         pullRequests: getPullRequestCount(repo),
         openPullRequests: pullRequestMetaData[0],
         openedPullRequests: pullRequestMetaData[1],
@@ -121,6 +122,7 @@ function aggregateRepoData(repos) {
         openIssues: repos.map(repo => repo.openIssues).reduce((a, b) => a + b, 0),
         openedIssues: repos.map(repo => repo.openedIssues).reduce((a, b) => a + b, 0),
         closedIssues: repos.map(repo => repo.closedIssues).reduce((a, b) => a + b, 0),
+        staleIssues: repos.map(repo => repo.staleIssues).reduce((a, b) => a + b, 0),
         pullRequests: repos.map(repo => repo.pullRequests).reduce((a, b) => a + b, 0),
         openPullRequests: repos.map(repo => repo.openPullRequests).reduce((a, b) => a + b, 0),
         openedPullRequests: repos.map(repo => repo.openedPullRequests).reduce((a, b) => a + b, 0),
@@ -153,14 +155,25 @@ function getPullRequestCount(repoData) {
     return repoData.repository.pullRequests.totalCount;
 }
 
+function millisecondsToDays(milliseconds) {
+    return milliseconds / 1000 / 60 / 60 / 24;
+}
+
 function getIssueMetaData(repoData) {
     var issuesOpen = 0;
     var issuesOpened = 0;
     var issuesClosed = 0;
+    var issuesStale = 0;
     var openTimes = [];
     repoData.repository.issues.nodes.forEach(function(issue) {
         if (issue.state === "OPEN") {
             issuesOpen += 1;
+            // Last event is either the last event in the timeline or the creation of the issue
+            var lastEvent = (issue.timelineItems.nodes[0]) ? issue.timelineItems.nodes[0].createdAt : issue.createdAt;
+            lastEvent = new Date(lastEvent);
+            if (millisecondsToDays(Date.now() - lastEvent) > 14) {
+                issuesStale += 1;
+            }
         }
         var timeCreated = new Date(issue.createdAt);
         if (timeCreated > START_TIME && timeCreated < END_TIME) {
@@ -172,13 +185,13 @@ function getIssueMetaData(repoData) {
                 issuesClosed += 1;
             }
             // Time open in days
-            var timeOpen = (timeClosed - timeCreated) / 1000 / 60 / 60 / 24;
+            var timeOpen = millisecondsToDays(timeClosed - timeCreated);
             openTimes.push(timeOpen);
         }
     });
     var averageOpenTime = openTimes.reduce((a, b) => a + b, 0) / openTimes.length;
     averageOpenTime = Math.round(averageOpenTime);
-    return [issuesOpen, issuesOpened, issuesClosed, averageOpenTime];
+    return [issuesOpen, issuesOpened, issuesClosed, issuesStale, averageOpenTime];
 }
 
 function getPullRequestMetaData(repoData) {
@@ -213,7 +226,7 @@ function getPullRequestMetaData(repoData) {
                 pullRequestsMerged += 1;
             }
             // Time open in days
-            var timeOpen = (timeMerged - timeCreated) / 1000 / 60 / 60 / 24;
+            var timeOpen = millisecondsToDays(timeMerged - timeCreated);
             openTimes.push(timeOpen);
         }
         if (pullRequest.closedAt && pullRequest.state === "CLOSED") {
@@ -260,6 +273,7 @@ async function writeCSV(data) {
             {id: 'openIssues', title: 'Open Issues'},
             {id: 'openedIssues', title: 'Opened Issues'},
             {id: 'closedIssues', title: 'Closed Issues'},
+            {id: 'staleIssues', title: 'Stale Issues'},
             {id: 'averageIssueOpenTime', title: 'Average Issue Open Time'},
             {id: 'pullRequests', title: 'Pull Requests'},
             {id: 'openPullRequests', title: 'Open Pull Requests'},

@@ -5,7 +5,6 @@ const mainQuery = /* GraphQL */ `
             issues(first:100) {
                 totalCount
                 nodes {
-                    title
                     createdAt
                     authorAssociation
                     state
