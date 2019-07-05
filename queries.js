@@ -1,64 +1,136 @@
 const mainQuery = /* GraphQL */ `
-query GitHub($repo: String!) {
-    repository(owner:"GSA", name:$repo) {
-        name
-        issues(first:100) {
-            totalCount
-            nodes {
-                title
-                createdAt
-                url
-                labels(first:5) {
-                    edges {
-                        node {
-                            name
+    query GitHub($repo: String!) {
+        repository(owner:"GSA", name:$repo) {
+            name
+            issues(first:100) {
+                totalCount
+                nodes {
+                    title
+                    createdAt
+                    authorAssociation
+                    state
+                    timelineItems(last:1) {
+                        nodes { 
+                            __typename
+                            ... on AddedToProjectEvent {
+                                createdAt
+                            }
+                            ... on AssignedEvent {
+                                createdAt
+                            }
+                            ... on ClosedEvent {
+                                createdAt
+                            }
+                            ... on CommentDeletedEvent {
+                                createdAt
+                            }
+                            ... on ConvertedNoteToIssueEvent {
+                                createdAt
+                            }
+                            ... on CrossReferencedEvent {
+                                createdAt
+                            }
+                            ... on DemilestonedEvent {
+                                createdAt
+                            }
+                            ... on IssueComment {
+                                createdAt
+                            }
+                            ... on LabeledEvent {
+                                createdAt
+                            }
+                            ... on LockedEvent {
+                                createdAt
+                            }
+                            ... on MentionedEvent {
+                                createdAt
+                            }
+                            ... on MilestonedEvent {
+                                createdAt
+                            }
+                            ... on MovedColumnsInProjectEvent {
+                                createdAt
+                            }
+                            ... on PinnedEvent {
+                                createdAt
+                            }
+                            ... on ReferencedEvent {
+                                createdAt
+                            }
+                            ... on RemovedFromProjectEvent {
+                                createdAt
+                            }
+                            ... on RenamedTitleEvent {
+                                createdAt
+                            }
+                            ... on ReopenedEvent {
+                                createdAt
+                            }
+                            ... on SubscribedEvent {
+                                createdAt
+                            }
+                            ... on TransferredEvent {
+                                createdAt
+                            }
+                            ... on UnassignedEvent {
+                                createdAt
+                            }
+                            ... on UnlabeledEvent {
+                                createdAt
+                            }
+                            ... on UnlockedEvent {
+                                createdAt
+                            }
+                            ... on UnpinnedEvent {
+                                createdAt
+                            }
+                            ... on UnsubscribedEvent {
+                                createdAt
+                            }
+                            ... on UserBlockedEvent {
+                                createdAt
+                            }
                         }
                     }
                 }
-                author {
-                    login
+                pageInfo {
+                    startCursor
+                    hasNextPage
+                    endCursor
                 }
-                authorAssociation
-                state
             }
-            pageInfo {
-                startCursor
-                hasNextPage
-                endCursor
+            pullRequests(first:100) {
+                totalCount
+                nodes {
+                    createdAt
+                    state
+                    mergedAt
+                    closedAt
+                    authorAssociation
+                }
+                pageInfo {
+                    startCursor
+                    hasNextPage
+                    endCursor
+                }
+            }
+            stargazers {
+                totalCount
+            }
+            forks {
+                totalCount
+            }
+            watchers {
+                totalCount
             }
         }
-        pullRequests(first:100) {
-            totalCount
-            nodes {
-                createdAt
-                state
-                mergedAt
-                closedAt
-                authorAssociation
-            }
-            pageInfo {
-                startCursor
-                hasNextPage
-                endCursor
-            }
-        }
-        stargazers {
-            totalCount
-        }
-        forks {
-            totalCount
-        }
-        watchers {
-            totalCount
+        rateLimit {
+            limit
+            cost
+            remaining
+            resetAt
         }
     }
-    rateLimit {
-        limit
-        cost
-        remaining
-        resetAt
-    }
-}
 `
 
 const issuesQuery = /* GraphQL */ `
@@ -68,28 +140,90 @@ const issuesQuery = /* GraphQL */ `
             issues(first:100, after:$cursor) {
                 totalCount
                 nodes {
-                    title
-                    url
-                    labels(first:5) {
-                        edges {
-                            node {
-                                name
-                            }
-                        }
-                    }
-                    author {
-                        login
-                    }
                     createdAt
+                    state
                     closedAt
                     authorAssociation
-                    state
-                    timeline(last:1) {
+                    timelineItems(last:1) {
                         nodes { 
                             __typename
+                            ... on AddedToProjectEvent {
+                                createdAt
+                            }
+                            ... on AssignedEvent {
+                                createdAt
+                            }
+                            ... on ClosedEvent {
+                                createdAt
+                            }
+                            ... on CommentDeletedEvent {
+                                createdAt
+                            }
+                            ... on ConvertedNoteToIssueEvent {
+                                createdAt
+                            }
                             ... on CrossReferencedEvent {
                                 createdAt
-                                id
+                            }
+                            ... on DemilestonedEvent {
+                                createdAt
+                            }
+                            ... on IssueComment {
+                                createdAt
+                            }
+                            ... on LabeledEvent {
+                                createdAt
+                            }
+                            ... on LockedEvent {
+                                createdAt
+                            }
+                            ... on MentionedEvent {
+                                createdAt
+                            }
+                            ... on MilestonedEvent {
+                                createdAt
+                            }
+                            ... on MovedColumnsInProjectEvent {
+                                createdAt
+                            }
+                            ... on PinnedEvent {
+                                createdAt
+                            }
+                            ... on ReferencedEvent {
+                                createdAt
+                            }
+                            ... on RemovedFromProjectEvent {
+                                createdAt
+                            }
+                            ... on RenamedTitleEvent {
+                                createdAt
+                            }
+                            ... on ReopenedEvent {
+                                createdAt
+                            }
+                            ... on SubscribedEvent {
+                                createdAt
+                            }
+                            ... on TransferredEvent {
+                                createdAt
+                            }
+                            ... on UnassignedEvent {
+                                createdAt
+                            }
+                            ... on UnlabeledEvent {
+                                createdAt
+                            }
+                            ... on UnlockedEvent {
+                                createdAt
+                            }
+                            ... on UnpinnedEvent {
+                                createdAt
+                            }
+                            ... on UnsubscribedEvent {
+                                createdAt
+                            }
+                            ... on UserBlockedEvent {
+                                createdAt
                             }
                         }
                     }
@@ -111,33 +245,33 @@ const issuesQuery = /* GraphQL */ `
 `
 
 const pullRequestsQuery = /* GraphQL */ `
-        query GitHub($repo: String!, $cursor: String!) {
-            repository(owner:"GSA", name:$repo) {
-                name
-                pullRequests(first:100, after:$cursor) {
-                    totalCount
-                    nodes {
-                        createdAt
-                        state
-                        mergedAt
-                        closedAt
-                        authorAssociation
-                    }
-                    pageInfo {
-                        startCursor
-                        hasNextPage
-                        endCursor
-                    }
+    query GitHub($repo: String!, $cursor: String!) {
+        repository(owner:"GSA", name:$repo) {
+            name
+            pullRequests(first:100, after:$cursor) {
+                totalCount
+                nodes {
+                    createdAt
+                    state
+                    mergedAt
+                    closedAt
+                    authorAssociation
                 }
-            }  
-            rateLimit {
-                limit
-                cost
-                remaining
-                resetAt
+                pageInfo {
+                    startCursor
+                    hasNextPage
+                    endCursor
+                }
             }
+        }  
+        rateLimit {
+            limit
+            cost
+            remaining
+            resetAt
         }
-    `
+    }
+`
 
 module.exports = { 
     mainQuery: mainQuery,
