@@ -311,6 +311,7 @@ function getIssueMetaData(repoData) {
         }
     });
     var averageOpenTime = openTimes.reduce((a, b) => a + b, 0) / openTimes.length;
+    averageOpenTime = Math.round(averageOpenTime);
     return [issuesOpen, issuesOpened, issuesClosed, averageOpenTime];
 }
 
@@ -357,6 +358,7 @@ function getPullRequestMetaData(repoData) {
         }
     });
     var averageOpenTime = openTimes.reduce((a, b) => a + b, 0) / openTimes.length;
+    averageOpenTime = Math.round(averageOpenTime);
     return [pullRequestsOpen, pullRequestsOpened, internalPullRequestsOpened, externalPullRequestsOpened, firstTimeContributorPullRequestsOpened, pullRequestsMerged, pullRequestsClosed, averageOpenTime];
 }
 
