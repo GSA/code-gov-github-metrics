@@ -168,9 +168,10 @@ function processRepo(repoData) {
         watches: getWatchCount(repoData),
         forks: getForkCount(repoData),
         issues: getIssueCount(repoData),
-        openIssues: getOpenIssueCount(repoData),
-        openedIssues: getOpenedClosedIssueCount(repoData)[0],
-        closedIssues: getOpenedClosedIssueCount(repoData)[1],
+        openIssues: getIssueMetaData(repoData)[0],
+        openedIssues: getIssueMetaData(repoData)[1],
+        closedIssues: getIssueMetaData(repoData)[2],
+        averageIssueOpenTime: getIssueMetaData(repoData)[3],
     };
     return repoData;
 }
@@ -205,30 +206,32 @@ function getIssueCount(repoData) {
     return repoData.repository.issues.totalCount;
 }
 
-function getOpenIssueCount(repoData) {
+function getIssueMetaData(repoData) {
     var issuesOpen = 0;
+    var issuesOpened = 0;
+    var issuesClosed = 0;
+    var openTimes = [];
     repoData.repository.issues.nodes.forEach(function(issue) {
         if (issue.state === "OPEN") {
             issuesOpen += 1;
         }
-    });
-    return issuesOpen;
-}
-
-function getOpenedClosedIssueCount(repoData) {
-    var issuesOpened = 0;
-    var issuesClosed = 0;
-    repoData.repository.issues.nodes.forEach(function(issue) {
         var timeCreated = new Date(issue.createdAt);
-        var timeClosed = new Date(issue.closedAt);
         if (timeCreated > START_TIME && timeCreated < END_TIME) {
             issuesOpened += 1;
         }
-        if (timeClosed > START_TIME && timeClosed < END_TIME) {
-            issuesClosed += 1;
+        if (issue.closedAt) {
+            var timeClosed = new Date(issue.closedAt);
+            console.log(timeClosed - timeCreated);
+            if (timeClosed > START_TIME && timeClosed < END_TIME) {
+                issuesClosed += 1;
+            }
+            // Time Open in Days
+            var timeOpen = (timeClosed - timeCreated) / 1000 / 60 / 60 / 24;
+            openTimes.push(timeOpen);
         }
     });
-    return [issuesOpened, issuesClosed];
+    var averageOpenTime = openTimes.reduce((a, b) => a + b, 0) / openTimes.length;
+    return [issuesOpen, issuesOpened, issuesClosed, averageOpenTime];
 }
 
 async function fetchGitHubData() {
@@ -262,14 +265,17 @@ async function writeCSV(data) {
         {id: 'issues', title: 'Issues'},
         {id: 'openIssues', title: 'Open Issues'},
         {id: 'openedIssues', title: 'Opened Issues'},
-        {id: 'closedIssues', title: 'Closed Issues'}
+        {id: 'closedIssues', title: 'Closed Issues'},
+        {id: 'averageIssueOpenTime', title: 'Average Issue Open Time'}
     ]
     });
 
     csvWriter.writeRecords(data).then(() => console.log('The CSV file was written successfully'));
 }
 
+// Get start and end Times from the command line arguments
 const START_TIME = new Date(process.argv[2]);
 const END_TIME = new Date(process.argv[3]);
 
+// Start the process
 fetchGitHubData();
