@@ -169,7 +169,8 @@ function processRepo(repoData) {
         watches: getWatchCount(repoData),
         forks: getForkCount(repoData),
         issues: getIssueCount(repoData),
-        openIssues: getOpenIssueCount(repoData)
+        openIssues: getOpenClosedIssueCount(repoData)[0],
+        closedIssues: getOpenClosedIssueCount(repoData)[1]
     };
     return repoData;
 }
@@ -180,7 +181,9 @@ function aggregateRepoData(repos) {
         stars: repos.map(repo => repo.stars).reduce((a, b) => a + b, 0),
         watches: repos.map(repo => repo.watches).reduce((a, b) => a + b, 0),
         forks: repos.map(repo => repo.forks).reduce((a, b) => a + b, 0),
-        issues: repos.map(repo => repo.issues).reduce((a, b) => a + b, 0)
+        issues: repos.map(repo => repo.issues).reduce((a, b) => a + b, 0),
+        openIssues: repos.map(repo => repo.openIssues).reduce((a, b) => a + b, 0),
+        closedIssues: repos.map(repo => repo.closedIssues).reduce((a, b) => a + b, 0)
     };
     return repoData;
 }
@@ -201,14 +204,18 @@ function getIssueCount(repoData) {
     return repoData.repository.issues.totalCount;
 }
 
-function getOpenIssueCount(repoData) {
+function getOpenClosedIssueCount(repoData) {
     var issuesOpen = 0;
+    var issuesClosed = 0;
     repoData.repository.issues.nodes.forEach(function(issue) {
         if (issue.state === "OPEN") {
             issuesOpen += 1;
         }
+        if (issue.state === "CLOSED") {
+            issuesClosed += 1;
+        }
     });
-    return issuesOpen;
+    return [issuesOpen, issuesClosed];
 }
 
 async function fetchGitHubData() {
@@ -240,7 +247,8 @@ async function writeCSV(data) {
         {id: 'watches', title: 'Watches'},
         {id: 'forks', title: 'Forks'},
         {id: 'issues', title: 'Issues'},
-        {id: 'openIssues', title: 'Open Issues'}
+        {id: 'openIssues', title: 'Open Issues'},
+        {id: 'closedIssues', title: 'Closed Issues'}
     ]
     });
 
