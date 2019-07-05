@@ -42,6 +42,14 @@ async function queryGitHub(repoName) {
             }
             pullRequests(first:100) {
                 totalCount
+                nodes {
+                    createdAt
+                }
+                pageInfo {
+                    startCursor
+                    hasNextPage
+                    endCursor
+                }
             }
             stargazers {
                 totalCount
@@ -70,7 +78,12 @@ async function queryGitHub(repoName) {
 
     if (dataJSON.repository.issues.pageInfo.hasNextPage) {
         var issues = await queryIssuesDeep(repoName, dataJSON.repository.issues.pageInfo.endCursor, dataJSON.repository.issues.nodes);
-        dataJSON.repository.issues.edges = issues;
+        dataJSON.repository.issues.nodes = issues;
+    }
+
+    if (dataJSON.repository.pullRequests.pageInfo.hasNextPage) {
+        var pullRequests = await queryPullRequestsDeep(repoName, dataJSON.repository.pullRequests.pageInfo.endCursor, dataJSON.repository.pullRequests.nodes);
+        dataJSON.repository.pullRequests.nodes = pullRequests;
     }
 
     return dataJSON;
@@ -147,6 +160,55 @@ async function queryIssuesDeep(repoName, cursor, issues) {
     }
 
     return issues;
+}
+
+async function queryPullRequestsDeep(repoName, cursor, pullRequests) {
+    const endpoint = 'https://api.github.com/graphql';
+  
+    const graphQLClient = new GraphQLClient(endpoint, {
+        headers: {
+            authorization: 'Bearer ' + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
+        },
+    });
+  
+    const query = /* GraphQL */ `
+        query GitHub($repo: String!, $cursor: String!) {
+            repository(owner:"GSA", name:$repo) {
+                name
+                pullRequests(first:100, after:$cursor) {
+                    totalCount
+                    nodes {
+                        createdAt
+                    }
+                    pageInfo {
+                        startCursor
+                        hasNextPage
+                        endCursor
+                    }
+                }
+            }  
+            rateLimit {
+                limit
+                cost
+                remaining
+                resetAt
+            }
+        }
+    `
+  
+    const variables = {
+        repo: repoName,
+        cursor: cursor
+    };
+  
+    const dataJSON = await graphQLClient.request(query, variables);
+    dataJSON.repository.pullRequests.nodes.forEach(pullRequest => {pullRequests.push(pullRequest)});
+
+    if (dataJSON.repository.pullRequests.pageInfo.hasNextPage) {
+        return await queryIssuesDeep(repoName, dataJSON.repository.pullRequests.pageInfo.endCursor, pullRequests);
+    }
+
+    return pullRequests;
 }
 
 function processRepo(repoData) {
