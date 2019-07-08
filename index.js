@@ -207,6 +207,18 @@ function unionSets(...iterables) {
     return set;
 }
 
+function authorIsInternal(authorAssociation) {
+    return authorAssociation === "OWNER" || authorAssociation === "MEMBER" || authorAssociation === "COLLABORATOR"; 
+}
+
+function authorIsExternal(authorAssociation) {
+    return authorAssociation === "FIRST_TIMER" || authorAssociation === "FIRST_TIME_CONTRIBUTOR" || authorAssociation === "CONTRIBUTOR"; 
+}
+
+function authorIsFirstTimeContributor(authorAssociation) {
+    return authorAssociation === "FIRST_TIMER" || authorAssociation === "FIRST_TIME_CONTRIBUTOR";
+}
+
 function getIssueMetaData(repoData) {
     var openIssues = 0;
     var staleIssues = 0;
@@ -232,13 +244,13 @@ function getIssueMetaData(repoData) {
         var timeCreated = new Date(issue.createdAt);
         if (timeCreated > START_DATE && timeCreated < END_DATE) {
             openedIssues += 1;
-            if (issue.authorAssociation === "OWNER" || issue.authorAssociation === "MEMBER" || issue.authorAssociation === "COLLABORATOR") {
+            if (authorIsInternal(issue.authorAssociation)) {
                 openedIssuesInternal += 1;
             }
-            if (issue.authorAssociation === "FIRST_TIMER" || issue.authorAssociation === "FIRST_TIME_CONTRIBUTOR" || issue.authorAssociation === "CONTRIBUTOR") {
+            if (authorIsExternal(issue.authorAssociation)) {
                 openedIssuesExternal += 1;
             }
-            if (issue.authorAssociation === "FIRST_TIMER" || issue.authorAssociation === "FIRST_TIME_CONTRIBUTOR"){
+            if (authorIsFirstTimeContributor(issue.authorAssociation)){
                 openedIssuesFirstTimeContributor += 1;
             }
         }
@@ -284,13 +296,13 @@ function getPullRequestMetaData(repoData) {
         var timeCreated = new Date(pullRequest.createdAt);
         if (timeCreated > START_DATE && timeCreated < END_DATE) {
             openedPullRequests += 1;
-            if (pullRequest.authorAssociation === "OWNER" || pullRequest.authorAssociation === "MEMBER" || pullRequest.authorAssociation === "COLLABORATOR") {
+            if (authorIsInternal(pullRequest.authorAssociation)) {
                 openedPullRequestsInternal += 1;
             }
-            if (pullRequest.authorAssociation === "FIRST_TIMER" || pullRequest.authorAssociation === "FIRST_TIME_CONTRIBUTOR" || pullRequest.authorAssociation === "CONTRIBUTOR") {
+            if (authorIsExternal(pullRequest.authorAssociation)) {
                 openedPullRequestsExternal += 1;
             }
-            if (pullRequest.authorAssociation === "FIRST_TIMER" || pullRequest.authorAssociation === "FIRST_TIME_CONTRIBUTOR"){
+            if (authorIsFirstTimeContributor(pullRequest.authorAssociation)){
                 openedPullRequestsFirstTimeContributor += 1;
             }
         }
@@ -360,7 +372,7 @@ async function writeCSV(data) {
             {id: 'pullRequests', title: 'Pull Requests'},
             {id: 'openPullRequests', title: 'Open Pull Requests'},
             {id: 'averagePullRequestMergeTime', title: 'Average Pull Request Time to Merge (Days)'},
-            {id: 'contributors', title: 'Contributors'},
+            {id: 'contributors', title: 'Contributors (All Time)'},
 
             // These metrics are for the time period provided through command line arguments
             {id: 'openedIssues', title: 'Issues Opened'},
