@@ -297,6 +297,10 @@ function logExampleCommandLineArguments() {
     console.log("For example: node index.js 2019-12-01 2019-12-31");
 }
 
+function isValidDateString(dateString) {
+    return /^\d\d\d\d-\d\d-\d\d$/.test(dateString);
+}
+
 function isValidDate(d) {
     return d instanceof Date && !isNaN(d);
 }
@@ -310,8 +314,7 @@ function validateCommandLineArguments() {
     }
 
     // Validate that the command line arguments are in the right form
-    var regex = RegExp('\d\d\d\d-\d\d-\d\d');
-    if (!/^\d\d\d\d-\d\d-\d\d$/.test(process.argv[2]) || !/^\d\d\d\d-\d\d-\d\d$/.test(process.argv[3])) {
+    if (!isValidDateString(process.argv[2]) || !isValidDateString(process.argv[3])) {
         console.log("Invalid inputs - please provide dates in the format YYYY-MM-DD.");
         logExampleCommandLineArguments();
         return false;
