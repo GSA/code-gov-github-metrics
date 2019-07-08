@@ -88,6 +88,9 @@ async function queryPullRequestsDeep(repoName, cursor, pullRequests) {
 function processRepo(repo) {
     var issueMetaData = getIssueMetaData(repo);
     var pullRequestMetaData = getPullRequestMetaData(repo);
+    var contributorsListThisPeriodInternal = unionSets(issueMetaData.contributorsListThisPeriodInternal, pullRequestMetaData.contributorsListThisPeriodInternal);
+    var contributorsListThisPeriodExternal = unionSets(issueMetaData.contributorsListThisPeriodExternal, pullRequestMetaData.contributorsListThisPeriodExternal);
+    var contributorsListThisPeriodFirstTimeContributor = unionSets(issueMetaData.contributorsListThisPeriodFirstTimeContributor, pullRequestMetaData.contributorsListThisPeriodFirstTimeContributor);
     var repoData = {
         repo: repo.repository.name,
 
@@ -125,7 +128,10 @@ function processRepo(repo) {
         openedPullRequestsFirstTimeContributor: pullRequestMetaData.openedPullRequestsFirstTimeContributor,
         mergedPullRequests: pullRequestMetaData.mergedPullRequests,
         closedPullRequests: pullRequestMetaData.closedPullRequests,
-        contributorsThisPeriod: unionSets(issueMetaData.contributorsListThisPeriod, pullRequestMetaData.contributorsListThisPeriod).size
+        contributorsThisPeriod: unionSets(issueMetaData.contributorsListThisPeriod, pullRequestMetaData.contributorsListThisPeriod).size,
+        contributorsThisPeriodInternal: contributorsListThisPeriodInternal.size,
+        contributorsThisPeriodExternal: contributorsListThisPeriodExternal.size,
+        contributorsThisPeriodFirstTimeContributor: contributorsListThisPeriodFirstTimeContributor.size
     };
     
     return repoData;
@@ -232,7 +238,7 @@ function authorIsInternal(authorAssociation) {
 }
 
 function authorIsExternal(authorAssociation) {
-    return authorAssociation === "FIRST_TIMER" || authorAssociation === "FIRST_TIME_CONTRIBUTOR" || authorAssociation === "CONTRIBUTOR"; 
+    return authorAssociation === "FIRST_TIMER" || authorAssociation === "FIRST_TIME_CONTRIBUTOR" || authorAssociation === "CONTRIBUTOR" || authorAssociation === "NONE"; 
 }
 
 function authorIsFirstTimeContributor(authorAssociation) {
@@ -251,6 +257,9 @@ function getIssueMetaData(repoData) {
     var openTimes = [];
     var contributorsListAllTime = new Set();
     var contributorsListThisPeriod = new Set();
+    var contributorsListThisPeriodInternal = new Set();
+    var contributorsListThisPeriodExternal = new Set();
+    var contributorsListThisPeriodFirstTimeContributor = new Set();
     repoData.repository.issues.nodes.forEach(function(issue) {
         contributorsListAllTime.add(issue.author.login);
 
@@ -272,12 +281,15 @@ function getIssueMetaData(repoData) {
             contributorsListThisPeriod.add(issue.author.login);
             if (authorIsInternal(issue.authorAssociation)) {
                 openedIssuesInternal += 1;
+                contributorsListThisPeriodInternal.add(issue.author.login);
             }
             if (authorIsExternal(issue.authorAssociation)) {
                 openedIssuesExternal += 1;
+                contributorsListThisPeriodExternal.add(issue.author.login);
             }
             if (authorIsFirstTimeContributor(issue.authorAssociation)){
                 openedIssuesFirstTimeContributor += 1;
+                contributorsListThisPeriodFirstTimeContributor.add(issue.author.login);
             }
         }
         if (issue.closedAt) {
@@ -301,7 +313,10 @@ function getIssueMetaData(repoData) {
         closedIssues: closedIssues,
         openTimes: openTimes,
         contributorsListAllTime: contributorsListAllTime,
-        contributorsListThisPeriod: contributorsListThisPeriod
+        contributorsListThisPeriod: contributorsListThisPeriod,
+        contributorsListThisPeriodInternal: contributorsListThisPeriodInternal,
+        contributorsListThisPeriodExternal: contributorsListThisPeriodExternal,
+        contributorsListThisPeriodFirstTimeContributor: contributorsListThisPeriodFirstTimeContributor
     };
 }
 
@@ -316,6 +331,9 @@ function getPullRequestMetaData(repoData) {
     var openTimes = [];
     var contributorsListAllTime = new Set();
     var contributorsListThisPeriod = new Set();
+    var contributorsListThisPeriodInternal = new Set();
+    var contributorsListThisPeriodExternal = new Set();
+    var contributorsListThisPeriodFirstTimeContributor = new Set();
     repoData.repository.pullRequests.nodes.forEach(function(pullRequest) {
         contributorsListAllTime.add(pullRequest.author.login);
 
@@ -328,12 +346,15 @@ function getPullRequestMetaData(repoData) {
             contributorsListThisPeriod.add(pullRequest.author.login);
             if (authorIsInternal(pullRequest.authorAssociation)) {
                 openedPullRequestsInternal += 1;
+                contributorsListThisPeriodInternal.add(pullRequest.author.login);
             }
             if (authorIsExternal(pullRequest.authorAssociation)) {
                 openedPullRequestsExternal += 1;
+                contributorsListThisPeriodExternal.add(pullRequest.author.login);
             }
             if (authorIsFirstTimeContributor(pullRequest.authorAssociation)){
                 openedPullRequestsFirstTimeContributor += 1;
+                contributorsListThisPeriodFirstTimeContributor.add(pullRequest.author.login);
             }
         }
         if (pullRequest.mergedAt && pullRequest.state === "MERGED") {
@@ -362,7 +383,10 @@ function getPullRequestMetaData(repoData) {
         closedPullRequests: closedPullRequests,
         openTimes: openTimes,
         contributorsListAllTime: contributorsListAllTime,
-        contributorsListThisPeriod: contributorsListThisPeriod
+        contributorsListThisPeriod: contributorsListThisPeriod,
+        contributorsListThisPeriodInternal: contributorsListThisPeriodInternal,
+        contributorsListThisPeriodExternal: contributorsListThisPeriodExternal,
+        contributorsListThisPeriodFirstTimeContributor: contributorsListThisPeriodFirstTimeContributor
     };
 }
 
@@ -420,8 +444,10 @@ async function writeCSV(data) {
             {id: 'openedPullRequestsFirstTimeContributor', title: 'Pull Requests Opened (First Time Contributor)'},
             {id: 'mergedPullRequests', title: 'Pull Requests Merged'},
             {id: 'closedPullRequests', title: 'Pull Requests Closed'},
-            {id: 'contributorsThisPeriod', title: 'Contributors (This Period)'}
-            
+            {id: 'contributorsThisPeriod', title: 'Contributors (This Period)'},
+            {id: 'contributorsThisPeriodInternal', title: 'Contributors (This Period - Internal)'},
+            {id: 'contributorsThisPeriodExternal', title: 'Contributors (This Period - External)'},
+            {id: 'contributorsThisPeriodFirstTimeContributor', title: 'Contributors (This Period - First Time Contributor)'}
         ]
     });
 
