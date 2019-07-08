@@ -109,6 +109,9 @@ function processRepo(repo) {
 
         // These metrics are for the time period provided through command line arguments
         openedIssues: issueMetaData.openedIssues,
+        openedIssuesInternal: issueMetaData.openedIssuesInternal,
+        openedIssuesExternal: issueMetaData.openedIssuesExternal,
+        openedIssuesFirstTimeContributor: issueMetaData.openedIssuesFirstTimeContributor,
         closedIssues: issueMetaData.closedIssues,
         openedPullRequests: pullRequestMetaData.openedPullRequests,
         openedPullRequestsInternal: pullRequestMetaData.openedPullRequestsInternal,
@@ -138,6 +141,9 @@ function aggregateRepoData(repos) {
 
         // These metrics are for the time period provided through command line arguments
         openedIssues: sumList(repos.map(repo => repo.openedIssues)),
+        openedIssuesInternal: sumList(repos.map(repo => repo.openedIssuesInternal)),
+        openedIssuesExternal: sumList(repos.map(repo => repo.openedIssuesExternal)),
+        openedIssuesFirstTimeContributor: sumList(repos.map(repo => repo.openedIssuesFirstTimeContributor)),
         closedIssues: sumList(repos.map(repo => repo.closedIssues)),
         openedPullRequests: sumList(repos.map(repo => repo.openedPullRequests)),
         openedPullRequestsInternal: sumList(repos.map(repo => repo.openedPullRequestsInternal)),
@@ -188,6 +194,9 @@ function getIssueMetaData(repoData) {
     var openIssues = 0;
     var staleIssues = 0;
     var openedIssues = 0;
+    var openedIssuesInternal = 0;
+    var openedIssuesExternal = 0;
+    var openedIssuesFirstTimeContributor = 0;
     var closedIssues = 0;
     var openTimes = [];
     repoData.repository.issues.nodes.forEach(function(issue) {
@@ -203,6 +212,15 @@ function getIssueMetaData(repoData) {
         var timeCreated = new Date(issue.createdAt);
         if (timeCreated > START_DATE && timeCreated < END_DATE) {
             openedIssues += 1;
+            if (issue.authorAssociation === "OWNER" || issue.authorAssociation === "MEMBER" || issue.authorAssociation === "COLLABORATOR") {
+                openedIssuesInternal += 1;
+            }
+            if (issue.authorAssociation === "FIRST_TIMER" || issue.authorAssociation === "FIRST_TIME_CONTRIBUTOR" || issue.authorAssociation === "CONTRIBUTOR") {
+                openedIssuesExternal += 1;
+            }
+            if (issue.authorAssociation === "FIRST_TIMER" || issue.authorAssociation === "FIRST_TIME_CONTRIBUTOR"){
+                openedIssuesFirstTimeContributor += 1;
+            }
         }
         if (issue.closedAt) {
             var timeClosed = new Date(issue.closedAt);
@@ -218,6 +236,9 @@ function getIssueMetaData(repoData) {
         openIssues: openIssues,
         staleIssues: staleIssues,
         openedIssues: openedIssues,
+        openedIssuesInternal: openedIssuesInternal,
+        openedIssuesExternal: openedIssuesExternal,
+        openedIssuesFirstTimeContributor: openedIssuesFirstTimeContributor,
         closedIssues: closedIssues,
         openTimes: openTimes
     };
@@ -317,11 +338,14 @@ async function writeCSV(data) {
 
             // These metrics are for the time period provided through command line arguments
             {id: 'openedIssues', title: 'Issues Opened'},
+            {id: 'openedIssuesInternal', title: 'Issues Opened (Internal)'},
+            {id: 'openedIssuesExternal', title: 'Issues Opened (External)'},
+            {id: 'openedIssuesFirstTimeContributor', title: 'Issues Opened (First Time Contributor)'},
             {id: 'closedIssues', title: 'Issues Closed'},
             {id: 'openedPullRequests', title: 'Pull Requests Opened'},
-            {id: 'openedPullRequestsInternal', title: 'Internal Pull Requests Opened'},
-            {id: 'openedPullRequestsExternal', title: 'External Pull Requests Opened'},
-            {id: 'openedPullRequestsFirstTimeContributor', title: 'First Time Contributor Pull Requests Opened'},
+            {id: 'openedPullRequestsInternal', title: 'Pull Requests Opened (Internal)'},
+            {id: 'openedPullRequestsExternal', title: 'Pull Requests Opened (External)'},
+            {id: 'openedPullRequestsFirstTimeContributor', title: 'Pull Requests Opened (First Time Contributor)'},
             {id: 'mergedPullRequests', title: 'Pull Requests Merged'},
             {id: 'closedPullRequests', title: 'Pull Requests Closed'}
             
