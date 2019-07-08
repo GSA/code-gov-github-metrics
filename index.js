@@ -290,20 +290,43 @@ async function writeCSV(data) {
     csvWriter.writeRecords(data).then(() => console.log('The CSV file was written successfully'));
 }
 
-var START_DATE;
-var END_DATE;
-
+/**
+ * Logs an example of the correct format of command line arguments.
+ */
 function logExampleCommandLineArguments() {
     console.log("For example: node index.js 2019-12-01 2019-12-31");
 }
 
+/**
+ * Validates that dateString is in the proper format.
+ *
+ * Ensures that dateString is in the proper format to be
+ * parsed into a new Date object (YYYY-MM-DD).
+ * 
+ * @param {String} dateString A date as a string.
+ *
+ * @return {Boolean} Is dateString in the correct format (YYYY-MM-DD)?
+ */
 function isValidDateString(dateString) {
     return /^\d\d\d\d-\d\d-\d\d$/.test(dateString);
 }
 
-function isValidDate(d) {
-    return d instanceof Date && !isNaN(d);
+/**
+ * Validates that a Date object is valid.
+ *
+ * Ensures that date was created correctly and is valid.
+ * 
+ * @param {Date} date A Date object.
+ *
+ * @return {Boolean} Is date a valid Date object?
+ */
+function isValidDate(date) {
+    return date instanceof Date && !isNaN(date);
 }
+
+// Create global START_DATE and END_DATE variables to be set in the validateCommandLineArguments function
+var START_DATE;
+var END_DATE;
 
 /**
  * Validate that the command line arguments are correct and set START_DATE and END_DATE
