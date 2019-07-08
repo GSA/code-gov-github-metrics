@@ -178,7 +178,7 @@ function aggregateRepoData(repos) {
         contributorsThisPeriod: unionSetSize(repos.map(repo => repo.contributorsListThisPeriod)),
         contributorsThisPeriodInternal: unionSetSize(repos.map(repo => repo.contributorsListThisPeriodInternal)),
         contributorsThisPeriodExternal: unionSetSize(repos.map(repo => repo.contributorsListThisPeriodExternal)),
-        contributorsListThisPeriodFirstTimeContributor: unionSetSize(repos.map(repo => repo.contributorsListThisPeriodFirstTimeContributor))
+        contributorsThisPeriodFirstTimeContributor: unionSetSize(repos.map(repo => repo.contributorsListThisPeriodFirstTimeContributor))
     };
     return totalData;
 }
