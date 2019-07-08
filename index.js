@@ -91,7 +91,7 @@ function processRepo(repo) {
     var repoData = {
         repo: repo.repository.name,
 
-        // These metrics are as of the time of the script running
+        // These metrics are for all time as of the time of the script running
         stars: getStarCount(repo),
         watches: getWatchCount(repo),
         forks: getForkCount(repo),
@@ -102,10 +102,13 @@ function processRepo(repo) {
         pullRequests: getPullRequestCount(repo),
         openPullRequests: pullRequestMetaData.openPullRequests,
         averagePullRequestMergeTime: averageList(pullRequestMetaData.openTimes),
+        contributors: unionSets(issueMetaData.contributorsList, pullRequestMetaData.contributorsList).size,
 
         // These lists are included in repoData (but not the final .csv) to help with aggregation
         issueOpenTimes: issueMetaData.openTimes,
         pullRequestOpenTimes: pullRequestMetaData.openTimes,
+        issueContributors: issueMetaData.contributorsList,
+        pullRequestContributors: pullRequestMetaData.contributorsList,
 
         // These metrics are for the time period provided through command line arguments
         openedIssues: issueMetaData.openedIssues,
@@ -120,6 +123,7 @@ function processRepo(repo) {
         mergedPullRequests: pullRequestMetaData.mergedPullRequests,
         closedPullRequests: pullRequestMetaData.closedPullRequests
     };
+    
     return repoData;
 }
 
@@ -127,7 +131,7 @@ function aggregateRepoData(repos) {
     var totalData = {
         repo: "TOTAL",
 
-        // These metrics are as of the time of the script running
+        // These metrics are for all time as of the time of the script running
         stars: sumList(repos.map(repo => repo.stars)),
         watches: sumList(repos.map(repo => repo.watches)),
         forks: sumList(repos.map(repo => repo.forks)),
@@ -190,6 +194,19 @@ function averageList(list) {
     return Math.round(sumList(list) / list.length);
 }
 
+// https://stackoverflow.com/questions/32000865/simplest-way-to-merge-es6-maps-sets
+function unionSets(...iterables) {
+    const set = new Set();
+  
+    for (let iterable of iterables) {
+        for (let item of iterable) {
+            set.add(item);
+        }
+    }
+  
+    return set;
+}
+
 function getIssueMetaData(repoData) {
     var openIssues = 0;
     var staleIssues = 0;
@@ -199,7 +216,10 @@ function getIssueMetaData(repoData) {
     var openedIssuesFirstTimeContributor = 0;
     var closedIssues = 0;
     var openTimes = [];
+    var contributorsList = new Set();
     repoData.repository.issues.nodes.forEach(function(issue) {
+        contributorsList.add(issue.author.login);
+
         if (issue.state === "OPEN") {
             openIssues += 1;
             // Last event is either the last event in the timeline or the creation of the issue
@@ -240,7 +260,8 @@ function getIssueMetaData(repoData) {
         openedIssuesExternal: openedIssuesExternal,
         openedIssuesFirstTimeContributor: openedIssuesFirstTimeContributor,
         closedIssues: closedIssues,
-        openTimes: openTimes
+        openTimes: openTimes,
+        contributorsList: contributorsList
     };
 }
 
@@ -253,7 +274,10 @@ function getPullRequestMetaData(repoData) {
     var mergedPullRequests = 0;
     var closedPullRequests = 0;
     var openTimes = [];
+    var contributorsList = new Set();
     repoData.repository.pullRequests.nodes.forEach(function(pullRequest) {
+        contributorsList.add(pullRequest.author.login);
+
         if (pullRequest.state === "OPEN") {
             openPullRequests += 1;
         }
@@ -294,7 +318,8 @@ function getPullRequestMetaData(repoData) {
         openedPullRequestsFirstTimeContributor: openedPullRequestsFirstTimeContributor,
         mergedPullRequests: mergedPullRequests,
         closedPullRequests: closedPullRequests,
-        openTimes: openTimes
+        openTimes: openTimes,
+        contributorsList: contributorsList
     };
 }
 
@@ -324,7 +349,7 @@ async function writeCSV(data) {
         header: [
             {id: 'repo', title: 'Repo Name'},
 
-            // These metrics are as of the time of the script running
+            // These metrics are for all time as of the time of the script running
             {id: 'stars', title: 'Stars'},
             {id: 'watches', title: 'Watches'},
             {id: 'forks', title: 'Forks'},
@@ -335,6 +360,7 @@ async function writeCSV(data) {
             {id: 'pullRequests', title: 'Pull Requests'},
             {id: 'openPullRequests', title: 'Open Pull Requests'},
             {id: 'averagePullRequestMergeTime', title: 'Average Pull Request Time to Merge (Days)'},
+            {id: 'contributors', title: 'Contributors'},
 
             // These metrics are for the time period provided through command line arguments
             {id: 'openedIssues', title: 'Issues Opened'},

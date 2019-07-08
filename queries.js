@@ -6,6 +6,9 @@ const mainQuery = /* GraphQL */ `
                 totalCount
                 nodes {
                     createdAt
+                    author {
+                        login
+                    }
                     authorAssociation
                     state
                     timelineItems(last:1) {
@@ -105,6 +108,9 @@ const mainQuery = /* GraphQL */ `
                     state
                     mergedAt
                     closedAt
+                    author {
+                        login
+                    }
                     authorAssociation
                 }
                 pageInfo {
@@ -142,6 +148,9 @@ const issuesQuery = /* GraphQL */ `
                     createdAt
                     state
                     closedAt
+                    author {
+                        login
+                    }
                     authorAssociation
                     timelineItems(last:1) {
                         nodes { 
@@ -254,6 +263,9 @@ const pullRequestsQuery = /* GraphQL */ `
                     state
                     mergedAt
                     closedAt
+                    author {
+                        login
+                    }
                     authorAssociation
                 }
                 pageInfo {
