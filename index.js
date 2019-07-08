@@ -115,22 +115,22 @@ function processRepo(repo) {
 function aggregateRepoData(repos) {
     var totalData = {
         repo: "TOTAL",
-        stars: repos.map(repo => repo.stars).reduce((a, b) => a + b, 0),
-        watches: repos.map(repo => repo.watches).reduce((a, b) => a + b, 0),
-        forks: repos.map(repo => repo.forks).reduce((a, b) => a + b, 0),
-        issues: repos.map(repo => repo.issues).reduce((a, b) => a + b, 0),
-        pullRequests: repos.map(repo => repo.pullRequests).reduce((a, b) => a + b, 0),
-        openIssues: repos.map(repo => repo.openIssues).reduce((a, b) => a + b, 0),
-        staleIssues: repos.map(repo => repo.staleIssues).reduce((a, b) => a + b, 0),
-        openedIssues: repos.map(repo => repo.openedIssues).reduce((a, b) => a + b, 0),
-        closedIssues: repos.map(repo => repo.closedIssues).reduce((a, b) => a + b, 0),
-        openPullRequests: repos.map(repo => repo.openPullRequests).reduce((a, b) => a + b, 0),
-        openedPullRequests: repos.map(repo => repo.openedPullRequests).reduce((a, b) => a + b, 0),
-        openedPullRequestsInternal: repos.map(repo => repo.openedPullRequestsInternal).reduce((a, b) => a + b, 0),
-        openedPullRequestsExternal: repos.map(repo => repo.openedPullRequestsExternal).reduce((a, b) => a + b, 0),
-        openedPullRequestsFirstTimeContributor: repos.map(repo => repo.openedPullRequestsFirstTimeContributor).reduce((a, b) => a + b, 0),
-        mergedPullRequests: repos.map(repo => repo.mergedPullRequests).reduce((a, b) => a + b, 0),
-        closedPullRequests: repos.map(repo => repo.closedPullRequests).reduce((a, b) => a + b, 0),
+        stars: sumList(repos.map(repo => repo.stars)),
+        watches: sumList(repos.map(repo => repo.watches)),
+        forks: sumList(repos.map(repo => repo.forks)),
+        issues: sumList(repos.map(repo => repo.issues)),
+        pullRequests: sumList(repos.map(repo => repo.pullRequests)),
+        openIssues: sumList(repos.map(repo => repo.openIssues)),
+        staleIssues: sumList(repos.map(repo => repo.staleIssues)),
+        openedIssues: sumList(repos.map(repo => repo.openedIssues)),
+        closedIssues: sumList(repos.map(repo => repo.closedIssues)),
+        openPullRequests: sumList(repos.map(repo => repo.openPullRequests)),
+        openedPullRequests: sumList(repos.map(repo => repo.openedPullRequests)),
+        openedPullRequestsInternal: sumList(repos.map(repo => repo.openedPullRequestsInternal)),
+        openedPullRequestsExternal: sumList(repos.map(repo => repo.openedPullRequestsExternal)),
+        openedPullRequestsFirstTimeContributor: sumList(repos.map(repo => repo.openedPullRequestsFirstTimeContributor)),
+        mergedPullRequests: sumList(repos.map(repo => repo.mergedPullRequests)),
+        closedPullRequests: sumList(repos.map(repo => repo.closedPullRequests))
     };
     return totalData;
 }
@@ -275,7 +275,7 @@ async function fetchGitHubData() {
     });
 
     Promise.all(promises).then(function(repos) {
-        var data = repos.map(repoData => processRepo(repoData));
+        var data = repos.map(repo => processRepo(repo));
         var aggregatedData = aggregateRepoData(data);
         data.push(aggregatedData);
         writeCSV(data);
