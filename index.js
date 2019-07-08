@@ -115,6 +115,9 @@ function processRepo(repo) {
         pullRequestOpenTimes: pullRequestMetaData.openTimes,
         contributorsListAllTime: unionSets(issueMetaData.contributorsListAllTime, pullRequestMetaData.contributorsListAllTime),
         contributorsListThisPeriod: unionSets(issueMetaData.contributorsListThisPeriod, pullRequestMetaData.contributorsListThisPeriod),
+        contributorsListThisPeriodInternal: contributorsListThisPeriodInternal,
+        contributorsListThisPeriodExternal: contributorsListThisPeriodExternal,
+        contributorsListThisPeriodFirstTimeContributor: contributorsListThisPeriodFirstTimeContributor,
 
         // These metrics are for the time period provided through command line arguments
         openedIssues: issueMetaData.openedIssues,
@@ -172,7 +175,10 @@ function aggregateRepoData(repos) {
         openedPullRequestsFirstTimeContributor: sumList(repos.map(repo => repo.openedPullRequestsFirstTimeContributor)),
         mergedPullRequests: sumList(repos.map(repo => repo.mergedPullRequests)),
         closedPullRequests: sumList(repos.map(repo => repo.closedPullRequests)),
-        contributorsThisPeriod: unionSetSize(repos.map(repo => repo.contributorsListThisPeriod))
+        contributorsThisPeriod: unionSetSize(repos.map(repo => repo.contributorsListThisPeriod)),
+        contributorsThisPeriodInternal: unionSetSize(repos.map(repo => repo.contributorsListThisPeriodInternal)),
+        contributorsThisPeriodExternal: unionSetSize(repos.map(repo => repo.contributorsListThisPeriodExternal)),
+        contributorsListThisPeriodFirstTimeContributor: unionSetSize(repos.map(repo => repo.contributorsListThisPeriodFirstTimeContributor))
     };
     return totalData;
 }
