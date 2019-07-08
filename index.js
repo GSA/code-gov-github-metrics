@@ -98,6 +98,7 @@ function processRepo(repo) {
         issues: getIssueCount(repo),
         openIssues: issueMetaData.openIssues,
         staleIssues: issueMetaData.staleIssues,
+        percentStaleIssues: issueMetaData.openIssues === 0 ? "N/A" : Math.round(issueMetaData.staleIssues / issueMetaData.openIssues * 100),
         averageIssueOpenTime: averageList(issueMetaData.openTimes),
         pullRequests: getPullRequestCount(repo),
         openPullRequests: pullRequestMetaData.openPullRequests,
@@ -129,6 +130,8 @@ function processRepo(repo) {
 }
 
 function aggregateRepoData(repos) {
+    var openIssues = sumList(repos.map(repo => repo.openIssues));
+    var staleIssues = sumList(repos.map(repo => repo.staleIssues));
     var totalData = {
         repo: "TOTAL",
 
@@ -137,8 +140,9 @@ function aggregateRepoData(repos) {
         watches: sumList(repos.map(repo => repo.watches)),
         forks: sumList(repos.map(repo => repo.forks)),
         issues: sumList(repos.map(repo => repo.issues)),
-        openIssues: sumList(repos.map(repo => repo.openIssues)),
-        staleIssues: sumList(repos.map(repo => repo.staleIssues)),
+        openIssues: openIssues,
+        staleIssues: staleIssues,
+        percentStaleIssues: Math.round(staleIssues / openIssues * 100),
         averageIssueOpenTime: averageList(repos.map(repo => repo.issueOpenTimes).reduce((list1, list2) => list1.concat(list2))),
         pullRequests: sumList(repos.map(repo => repo.pullRequests)),
         openPullRequests: sumList(repos.map(repo => repo.openPullRequests)),
@@ -377,6 +381,7 @@ async function writeCSV(data) {
             {id: 'issues', title: 'Issues'},
             {id: 'openIssues', title: 'Open Issues'},
             {id: 'staleIssues', title: 'Stale Issues'},
+            {id: 'percentStaleIssues', title: '% Stale Issues'},
             {id: 'averageIssueOpenTime', title: 'Average Issue Open Time (Days)'},
             {id: 'pullRequests', title: 'Pull Requests'},
             {id: 'openPullRequests', title: 'Open Pull Requests'},
