@@ -90,24 +90,28 @@ function processRepo(repo) {
     var pullRequestMetaData = getPullRequestMetaData(repo);
     var repoData = {
         repo: repo.repository.name,
+
+        // These metrics are as of the time of the script running
         stars: getStarCount(repo),
         watches: getWatchCount(repo),
         forks: getForkCount(repo),
         issues: getIssueCount(repo),
-        pullRequests: getPullRequestCount(repo),
         openIssues: issueMetaData.openIssues,
         staleIssues: issueMetaData.staleIssues,
+        averageIssueOpenTime: averageList(issueMetaData.openTimes),
+        pullRequests: getPullRequestCount(repo),
+        openPullRequests: pullRequestMetaData.openPullRequests,
+        averagePullRequestMergeTime: averageList(pullRequestMetaData.openTimes),
+
+        // These metrics are for the time period provided through command line arguments
         openedIssues: issueMetaData.openedIssues,
         closedIssues: issueMetaData.closedIssues,
-        averageIssueOpenTime: averageList(issueMetaData.openTimes),
-        openPullRequests: pullRequestMetaData.openPullRequests,
         openedPullRequests: pullRequestMetaData.openedPullRequests,
         openedPullRequestsInternal: pullRequestMetaData.openedPullRequestsInternal,
         openedPullRequestsExternal: pullRequestMetaData.openedPullRequestsExternal,
         openedPullRequestsFirstTimeContributor: pullRequestMetaData.openedPullRequestsFirstTimeContributor,
         mergedPullRequests: pullRequestMetaData.mergedPullRequests,
-        closedPullRequests: pullRequestMetaData.closedPullRequests,
-        averagePullRequestMergeTime: averageList(pullRequestMetaData.openTimes)
+        closedPullRequests: pullRequestMetaData.closedPullRequests
     };
     return repoData;
 }
@@ -115,16 +119,22 @@ function processRepo(repo) {
 function aggregateRepoData(repos) {
     var totalData = {
         repo: "TOTAL",
+
+        // These metrics are as of the time of the script running
         stars: sumList(repos.map(repo => repo.stars)),
         watches: sumList(repos.map(repo => repo.watches)),
         forks: sumList(repos.map(repo => repo.forks)),
         issues: sumList(repos.map(repo => repo.issues)),
-        pullRequests: sumList(repos.map(repo => repo.pullRequests)),
         openIssues: sumList(repos.map(repo => repo.openIssues)),
         staleIssues: sumList(repos.map(repo => repo.staleIssues)),
+        averageIssueOpenTime: 0,
+        pullRequests: sumList(repos.map(repo => repo.pullRequests)),
+        openPullRequests: sumList(repos.map(repo => repo.openPullRequests)),
+        averagePullRequestMergeTime: 0,
+
+        // These metrics are for the time period provided through command line arguments
         openedIssues: sumList(repos.map(repo => repo.openedIssues)),
         closedIssues: sumList(repos.map(repo => repo.closedIssues)),
-        openPullRequests: sumList(repos.map(repo => repo.openPullRequests)),
         openedPullRequests: sumList(repos.map(repo => repo.openedPullRequests)),
         openedPullRequestsInternal: sumList(repos.map(repo => repo.openedPullRequestsInternal)),
         openedPullRequestsExternal: sumList(repos.map(repo => repo.openedPullRequestsExternal)),
@@ -288,24 +298,29 @@ async function writeCSV(data) {
         path: 'repoData.csv',
         header: [
             {id: 'repo', title: 'Repo Name'},
+
+            // These metrics are as of the time of the script running
             {id: 'stars', title: 'Stars'},
             {id: 'watches', title: 'Watches'},
             {id: 'forks', title: 'Forks'},
             {id: 'issues', title: 'Issues'},
-            {id: 'pullRequests', title: 'Pull Requests'},
             {id: 'openIssues', title: 'Open Issues'},
             {id: 'staleIssues', title: 'Stale Issues'},
+            {id: 'averageIssueOpenTime', title: 'Average Issue Open Time (Days)'},
+            {id: 'pullRequests', title: 'Pull Requests'},
+            {id: 'openPullRequests', title: 'Open Pull Requests'},
+            {id: 'averagePullRequestMergeTime', title: 'Average Pull Request Time to Merge (Days)'},
+
+            // These metrics are for the time period provided through command line arguments
             {id: 'openedIssues', title: 'Issues Opened'},
             {id: 'closedIssues', title: 'Issues Closed'},
-            {id: 'averageIssueOpenTime', title: 'Average Issue Open Time (Days)'},
-            {id: 'openPullRequests', title: 'Open Pull Requests'},
             {id: 'openedPullRequests', title: 'Pull Requests Opened'},
             {id: 'openedPullRequestsInternal', title: 'Internal Pull Requests Opened'},
             {id: 'openedPullRequestsExternal', title: 'External Pull Requests Opened'},
             {id: 'openedPullRequestsFirstTimeContributor', title: 'First Time Contributor Pull Requests Opened'},
             {id: 'mergedPullRequests', title: 'Pull Requests Merged'},
-            {id: 'closedPullRequests', title: 'Pull Requests Closed'},
-            {id: 'averagePullRequestMergeTime', title: 'Average Pull Request Time to Merge (Days)'}
+            {id: 'closedPullRequests', title: 'Pull Requests Closed'}
+            
         ]
     });
 
