@@ -99,7 +99,7 @@ function processRepo(repo) {
         staleIssues: issueMetaData.staleIssues,
         openedIssues: issueMetaData.openedIssues,
         closedIssues: issueMetaData.closedIssues,
-        averageIssueOpenTime: issueMetaData.openTimes,
+        averageIssueOpenTime: averageList(issueMetaData.openTimes),
         openPullRequests: pullRequestMetaData.openPullRequests,
         openedPullRequests: pullRequestMetaData.openedPullRequests,
         openedPullRequestsInternal: pullRequestMetaData.openedPullRequestsInternal,
@@ -107,7 +107,7 @@ function processRepo(repo) {
         openedPullRequestsFirstTimeContributor: pullRequestMetaData.openedPullRequestsFirstTimeContributor,
         mergedPullRequests: pullRequestMetaData.mergedPullRequests,
         closedPullRequests: pullRequestMetaData.closedPullRequests,
-        averagePullRequestMergeTime: pullRequestMetaData.openTimes,
+        averagePullRequestMergeTime: averageList(pullRequestMetaData.openTimes)
     };
     return repoData;
 }
@@ -157,6 +157,17 @@ function getPullRequestCount(repoData) {
 
 function millisecondsToDays(milliseconds) {
     return milliseconds / 1000 / 60 / 60 / 24;
+}
+
+function sumList(list) {
+    return list.reduce((a, b) => a + b, 0);
+}
+
+function averageList(list) {
+    if (list.length == 0) {
+        return null;
+    }
+    return Math.round(sumList(list) / list.length);
 }
 
 function getIssueMetaData(repoData) {
@@ -250,7 +261,6 @@ function getPullRequestMetaData(repoData) {
         closedPullRequests: closedPullRequests,
         openTimes: openTimes
     };
-    return [pullRequestsOpen, pullRequestsOpened, internalPullRequestsOpened, externalPullRequestsOpened, firstTimeContributorPullRequestsOpened, pullRequestsMerged, pullRequestsClosed, averageOpenTime];
 }
 
 async function fetchGitHubData() {
