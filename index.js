@@ -107,10 +107,8 @@ function processRepo(repo) {
         // These lists are included in repoData (but not the final .csv) to help with aggregation
         issueOpenTimes: issueMetaData.openTimes,
         pullRequestOpenTimes: pullRequestMetaData.openTimes,
-        issueContributorsAllTime: issueMetaData.contributorsListAllTime,
-        pullRequestContributorsAllTime: pullRequestMetaData.contributorsListAllTime,
-        issueContributorsThisPeriod: issueMetaData.contributorsListThisPeriod,
-        pullRequestContributorsThisPeriod: pullRequestMetaData.contributorsListThisPeriod,
+        contributorsListAllTime: unionSets(issueMetaData.contributorsListAllTime, pullRequestMetaData.contributorsListAllTime),
+        contributorsListThisPeriod: unionSets(issueMetaData.contributorsListThisPeriod, pullRequestMetaData.contributorsListThisPeriod),
 
         // These metrics are for the time period provided through command line arguments
         openedIssues: issueMetaData.openedIssues,
@@ -145,6 +143,7 @@ function aggregateRepoData(repos) {
         pullRequests: sumList(repos.map(repo => repo.pullRequests)),
         openPullRequests: sumList(repos.map(repo => repo.openPullRequests)),
         averagePullRequestMergeTime: averageList(repos.map(repo => repo.pullRequestOpenTimes).reduce((list1, list2) => list1.concat(list2))),
+        contributorsAllTime: repos.map(repo => repo.contributorsListAllTime).reduce((set1, set2) => unionSets(set1, set2)).size,
 
         // These metrics are for the time period provided through command line arguments
         openedIssues: sumList(repos.map(repo => repo.openedIssues)),
@@ -157,7 +156,8 @@ function aggregateRepoData(repos) {
         openedPullRequestsExternal: sumList(repos.map(repo => repo.openedPullRequestsExternal)),
         openedPullRequestsFirstTimeContributor: sumList(repos.map(repo => repo.openedPullRequestsFirstTimeContributor)),
         mergedPullRequests: sumList(repos.map(repo => repo.mergedPullRequests)),
-        closedPullRequests: sumList(repos.map(repo => repo.closedPullRequests))
+        closedPullRequests: sumList(repos.map(repo => repo.closedPullRequests)),
+        contributorsThisPeriod: repos.map(repo => repo.contributorsListThisPeriod).reduce((set1, set2) => unionSets(set1, set2)).size
     };
     return totalData;
 }
