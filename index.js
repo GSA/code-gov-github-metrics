@@ -99,6 +99,8 @@ function processRepo(repo) {
         openIssues: issueMetaData.openIssues,
         staleIssues: issueMetaData.staleIssues,
         percentStaleIssues: issueMetaData.openIssues === 0 ? "N/A" : Math.round(issueMetaData.staleIssues / issueMetaData.openIssues * 100),
+        oldIssues: issueMetaData.oldIssues,
+        percentOldIssues: issueMetaData.openIssues === 0 ? "N/A" : Math.round(issueMetaData.oldIssues / issueMetaData.openIssues * 100),
         averageIssueOpenTime: averageList(issueMetaData.openTimes),
         pullRequests: getPullRequestCount(repo),
         openPullRequests: pullRequestMetaData.openPullRequests,
@@ -132,6 +134,7 @@ function processRepo(repo) {
 function aggregateRepoData(repos) {
     var openIssues = sumList(repos.map(repo => repo.openIssues));
     var staleIssues = sumList(repos.map(repo => repo.staleIssues));
+    var oldIssues = sumList(repos.map(repo => repo.oldIssues));
     var totalData = {
         repo: "TOTAL",
 
@@ -143,11 +146,13 @@ function aggregateRepoData(repos) {
         openIssues: openIssues,
         staleIssues: staleIssues,
         percentStaleIssues: Math.round(staleIssues / openIssues * 100),
+        oldIssues: oldIssues,
+        percentOldIssues: Math.round(oldIssues / openIssues * 100),
         averageIssueOpenTime: averageList(repos.map(repo => repo.issueOpenTimes).reduce((list1, list2) => list1.concat(list2))),
         pullRequests: sumList(repos.map(repo => repo.pullRequests)),
         openPullRequests: sumList(repos.map(repo => repo.openPullRequests)),
         averagePullRequestMergeTime: averageList(repos.map(repo => repo.pullRequestOpenTimes).reduce((list1, list2) => list1.concat(list2))),
-        contributorsAllTime: repos.map(repo => repo.contributorsListAllTime).reduce((set1, set2) => unionSets(set1, set2)).size,
+        contributorsAllTime: getContributorsAggregateNumber(repos.map(repo => repo.contributorsListAllTime)),
 
         // These metrics are for the time period provided through command line arguments
         openedIssues: sumList(repos.map(repo => repo.openedIssues)),
@@ -161,7 +166,7 @@ function aggregateRepoData(repos) {
         openedPullRequestsFirstTimeContributor: sumList(repos.map(repo => repo.openedPullRequestsFirstTimeContributor)),
         mergedPullRequests: sumList(repos.map(repo => repo.mergedPullRequests)),
         closedPullRequests: sumList(repos.map(repo => repo.closedPullRequests)),
-        contributorsThisPeriod: repos.map(repo => repo.contributorsListThisPeriod).reduce((set1, set2) => unionSets(set1, set2)).size
+        contributorsThisPeriod: getContributorsAggregateNumber(repos.map(repo => repo.contributorsListThisPeriod))
     };
     return totalData;
 }
@@ -214,6 +219,10 @@ function unionSets(...iterables) {
     return set;
 }
 
+function getContributorsAggregateNumber(contributorsSets) {
+    return contributorsSets.reduce((set1, set2) => unionSets(set1, set2)).size;
+}
+
 function authorIsInternal(authorAssociation) {
     return authorAssociation === "OWNER" || authorAssociation === "MEMBER" || authorAssociation === "COLLABORATOR"; 
 }
@@ -229,6 +238,7 @@ function authorIsFirstTimeContributor(authorAssociation) {
 function getIssueMetaData(repoData) {
     var openIssues = 0;
     var staleIssues = 0;
+    var oldIssues = 0;
     var openedIssues = 0;
     var openedIssuesInternal = 0;
     var openedIssuesExternal = 0;
@@ -247,6 +257,9 @@ function getIssueMetaData(repoData) {
             lastEvent = new Date(lastEvent);
             if (millisecondsToDays(Date.now() - lastEvent) > 14) {
                 staleIssues += 1;
+            }
+            if (millisecondsToDays(Date.now() - issue.createAt) > 120) {
+                oldIssues += 1;
             }
         }
         var timeCreated = new Date(issue.createdAt);
@@ -276,6 +289,7 @@ function getIssueMetaData(repoData) {
     return {
         openIssues: openIssues,
         staleIssues: staleIssues,
+        oldIssues: oldIssues,
         openedIssues: openedIssues,
         openedIssuesInternal: openedIssuesInternal,
         openedIssuesExternal: openedIssuesExternal,
@@ -380,8 +394,10 @@ async function writeCSV(data) {
             {id: 'forks', title: 'Forks'},
             {id: 'issues', title: 'Issues'},
             {id: 'openIssues', title: 'Open Issues'},
-            {id: 'staleIssues', title: 'Stale Issues'},
+            {id: 'staleIssues', title: 'Stale Issues (No activity for >14 days)'},
             {id: 'percentStaleIssues', title: '% Stale Issues'},
+            {id: 'oldIssues', title: 'Old Issues (Open for >120 days)'},
+            {id: 'percentOldIssues', title: '% Old Issues'},
             {id: 'averageIssueOpenTime', title: 'Average Issue Open Time (Days)'},
             {id: 'pullRequests', title: 'Pull Requests'},
             {id: 'openPullRequests', title: 'Open Pull Requests'},
