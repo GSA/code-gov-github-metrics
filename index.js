@@ -176,12 +176,12 @@ function getIssueMetaData(repoData) {
             }
         }
         var timeCreated = new Date(issue.createdAt);
-        if (timeCreated > START_TIME && timeCreated < END_TIME) {
+        if (timeCreated > START_DATE && timeCreated < END_DATE) {
             issuesOpened += 1;
         }
         if (issue.closedAt) {
             var timeClosed = new Date(issue.closedAt);
-            if (timeClosed > START_TIME && timeClosed < END_TIME) {
+            if (timeClosed > START_DATE && timeClosed < END_DATE) {
                 issuesClosed += 1;
             }
             // Time open in days
@@ -208,7 +208,7 @@ function getPullRequestMetaData(repoData) {
             pullRequestsOpen += 1;
         }
         var timeCreated = new Date(pullRequest.createdAt);
-        if (timeCreated > START_TIME && timeCreated < END_TIME) {
+        if (timeCreated > START_DATE && timeCreated < END_DATE) {
             pullRequestsOpened += 1;
             if (pullRequest.authorAssociation === "OWNER" || pullRequest.authorAssociation === "MEMBER" || pullRequest.authorAssociation === "COLLABORATOR") {
                 internalPullRequestsOpened += 1;
@@ -222,7 +222,7 @@ function getPullRequestMetaData(repoData) {
         }
         if (pullRequest.mergedAt && pullRequest.state === "MERGED") {
             var timeMerged = new Date(pullRequest.mergedAt);
-            if (timeMerged > START_TIME && timeMerged < END_TIME) {
+            if (timeMerged > START_DATE && timeMerged < END_DATE) {
                 pullRequestsMerged += 1;
             }
             // Time open in days
@@ -231,7 +231,7 @@ function getPullRequestMetaData(repoData) {
         }
         if (pullRequest.closedAt && pullRequest.state === "CLOSED") {
             var timeClosed = new Date(pullRequest.closedAt);
-            if (timeClosed > START_TIME && timeClosed < END_TIME) {
+            if (timeClosed > START_DATE && timeClosed < END_DATE) {
                 pullRequestsClosed += 1;
             }
         }
@@ -290,9 +290,53 @@ async function writeCSV(data) {
     csvWriter.writeRecords(data).then(() => console.log('The CSV file was written successfully'));
 }
 
-// Get start and end times from the command line arguments
-const START_TIME = new Date(process.argv[2]);
-const END_TIME = new Date(process.argv[3]);
+var START_DATE;
+var END_DATE;
 
-// Start the process
-fetchGitHubData();
+function logExampleCommandLineArguments() {
+    console.log("For example: node index.js 2019-12-01 2019-12-31");
+}
+
+function validateCommandLineArguments() {
+    // Validate that there are 4 command line arguments (first 2 are always path to node executable and path to script file)
+    if (process.argv.length != 4) {
+        console.log("Invalid inputs - please provide exactly 2 command line arguments (start date and end date).");
+        logExampleCommandLineArguments();
+        return false;
+    }
+
+    // Validate that the command line arguments are in the right form
+    var regex = RegExp('\d\d\d\d-\d\d-\d\d');
+    if (!/^\d\d\d\d-\d\d-\d\d$/.test(process.argv[2]) || !/^\d\d\d\d-\d\d-\d\d$/.test(process.argv[3])) {
+        console.log("Invalid inputs - please provide dates in the format YYYY-MM-DD.");
+        logExampleCommandLineArguments();
+        return false;
+    }
+
+    // Make date objects from the command line arguments
+    START_DATE = new Date(process.argv[2]);
+    END_DATE = new Date(process.argv[3]);
+
+    // Validate that start date is before end date
+    if (START_DATE > END_DATE) {
+        console.log("Invalid inputs - start date must be before end date.");
+        logExampleCommandLineArguments();
+        return false;
+    }
+
+    // Validate that there is at least 1 day between the start and end date
+    if (millisecondsToDays(END_DATE - START_DATE) < 1) {
+        console.log("Invalid inputs - end date must be at least one day after start date.");
+        logExampleCommandLineArguments();
+        return false;
+    }
+
+    // Command line arguments have been validated
+    return true;
+}
+
+// Validate command line arguments before starting the main process
+if (validateCommandLineArguments()) {
+    // Start the main process
+    fetchGitHubData();
+}
