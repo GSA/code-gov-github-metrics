@@ -148,11 +148,11 @@ function aggregateRepoData(repos) {
         percentStaleIssues: Math.round(staleIssues / openIssues * 100),
         oldIssues: oldIssues,
         percentOldIssues: Math.round(oldIssues / openIssues * 100),
-        averageIssueOpenTime: averageList(repos.map(repo => repo.issueOpenTimes).reduce((list1, list2) => list1.concat(list2))),
+        averageIssueOpenTime: averageList(repos.map(repo => repo.issueOpenTimes)),
         pullRequests: sumList(repos.map(repo => repo.pullRequests)),
         openPullRequests: sumList(repos.map(repo => repo.openPullRequests)),
-        averagePullRequestMergeTime: averageList(repos.map(repo => repo.pullRequestOpenTimes).reduce((list1, list2) => list1.concat(list2))),
-        contributorsAllTime: getContributorsAggregateNumber(repos.map(repo => repo.contributorsListAllTime)),
+        averagePullRequestMergeTime: averageList(concatenateLists(repos.map(repo => repo.pullRequestOpenTimes))),
+        contributorsAllTime: unionSetSize(repos.map(repo => repo.contributorsListAllTime)),
 
         // These metrics are for the time period provided through command line arguments
         openedIssues: sumList(repos.map(repo => repo.openedIssues)),
@@ -166,7 +166,7 @@ function aggregateRepoData(repos) {
         openedPullRequestsFirstTimeContributor: sumList(repos.map(repo => repo.openedPullRequestsFirstTimeContributor)),
         mergedPullRequests: sumList(repos.map(repo => repo.mergedPullRequests)),
         closedPullRequests: sumList(repos.map(repo => repo.closedPullRequests)),
-        contributorsThisPeriod: getContributorsAggregateNumber(repos.map(repo => repo.contributorsListThisPeriod))
+        contributorsThisPeriod: unionSetSize(repos.map(repo => repo.contributorsListThisPeriod))
     };
     return totalData;
 }
@@ -206,6 +206,10 @@ function averageList(list) {
     return Math.round(sumList(list) / list.length);
 }
 
+function concatenateLists(lists) {
+    return lists.reduce((list1, list2) => list1.concat(list2));
+}
+
 // https://stackoverflow.com/questions/32000865/simplest-way-to-merge-es6-maps-sets
 function unionSets(...iterables) {
     const set = new Set();
@@ -219,8 +223,8 @@ function unionSets(...iterables) {
     return set;
 }
 
-function getContributorsAggregateNumber(contributorsSets) {
-    return contributorsSets.reduce((set1, set2) => unionSets(set1, set2)).size;
+function unionSetSize(sets) {
+    return sets.reduce((set1, set2) => unionSets(set1, set2)).size;
 }
 
 function authorIsInternal(authorAssociation) {
