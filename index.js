@@ -297,6 +297,10 @@ function logExampleCommandLineArguments() {
     console.log("For example: node index.js 2019-12-01 2019-12-31");
 }
 
+function isValidDate(d) {
+    return d instanceof Date && !isNaN(d);
+}
+
 function validateCommandLineArguments() {
     // Validate that there are 4 command line arguments (first 2 are always path to node executable and path to script file)
     if (process.argv.length != 4) {
@@ -316,6 +320,18 @@ function validateCommandLineArguments() {
     // Make date objects from the command line arguments
     START_DATE = new Date(process.argv[2]);
     END_DATE = new Date(process.argv[3]);
+
+    if (!isValidDate(START_DATE)) {
+        console.log("Invalid inputs - please provide a valid start date in the format YYYY-MM-DD.");
+        logExampleCommandLineArguments();
+        return false;
+    }
+
+    if (!isValidDate(END_DATE)) {
+        console.log("Invalid inputs - please provide a valid end date in the format YYYY-MM-DD.");
+        logExampleCommandLineArguments();
+        return false;
+    }
 
     // Validate that start date is before end date
     if (START_DATE > END_DATE) {
