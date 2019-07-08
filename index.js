@@ -102,13 +102,15 @@ function processRepo(repo) {
         pullRequests: getPullRequestCount(repo),
         openPullRequests: pullRequestMetaData.openPullRequests,
         averagePullRequestMergeTime: averageList(pullRequestMetaData.openTimes),
-        contributors: unionSets(issueMetaData.contributorsList, pullRequestMetaData.contributorsList).size,
+        contributorsAllTime: unionSets(issueMetaData.contributorsListAllTime, pullRequestMetaData.contributorsListAllTime).size,
 
         // These lists are included in repoData (but not the final .csv) to help with aggregation
         issueOpenTimes: issueMetaData.openTimes,
         pullRequestOpenTimes: pullRequestMetaData.openTimes,
-        issueContributors: issueMetaData.contributorsList,
-        pullRequestContributors: pullRequestMetaData.contributorsList,
+        issueContributorsAllTime: issueMetaData.contributorsListAllTime,
+        pullRequestContributorsAllTime: pullRequestMetaData.contributorsListAllTime,
+        issueContributorsThisPeriod: issueMetaData.contributorsListThisPeriod,
+        pullRequestContributorsThisPeriod: pullRequestMetaData.contributorsListThisPeriod,
 
         // These metrics are for the time period provided through command line arguments
         openedIssues: issueMetaData.openedIssues,
@@ -121,7 +123,8 @@ function processRepo(repo) {
         openedPullRequestsExternal: pullRequestMetaData.openedPullRequestsExternal,
         openedPullRequestsFirstTimeContributor: pullRequestMetaData.openedPullRequestsFirstTimeContributor,
         mergedPullRequests: pullRequestMetaData.mergedPullRequests,
-        closedPullRequests: pullRequestMetaData.closedPullRequests
+        closedPullRequests: pullRequestMetaData.closedPullRequests,
+        contributorsThisPeriod: unionSets(issueMetaData.contributorsListThisPeriod, pullRequestMetaData.contributorsListThisPeriod).size
     };
     
     return repoData;
@@ -228,9 +231,10 @@ function getIssueMetaData(repoData) {
     var openedIssuesFirstTimeContributor = 0;
     var closedIssues = 0;
     var openTimes = [];
-    var contributorsList = new Set();
+    var contributorsListAllTime = new Set();
+    var contributorsListThisPeriod = new Set();
     repoData.repository.issues.nodes.forEach(function(issue) {
-        contributorsList.add(issue.author.login);
+        contributorsListAllTime.add(issue.author.login);
 
         if (issue.state === "OPEN") {
             openIssues += 1;
@@ -244,6 +248,7 @@ function getIssueMetaData(repoData) {
         var timeCreated = new Date(issue.createdAt);
         if (timeCreated > START_DATE && timeCreated < END_DATE) {
             openedIssues += 1;
+            contributorsListThisPeriod.add(issue.author.login);
             if (authorIsInternal(issue.authorAssociation)) {
                 openedIssuesInternal += 1;
             }
@@ -273,7 +278,8 @@ function getIssueMetaData(repoData) {
         openedIssuesFirstTimeContributor: openedIssuesFirstTimeContributor,
         closedIssues: closedIssues,
         openTimes: openTimes,
-        contributorsList: contributorsList
+        contributorsListAllTime: contributorsListAllTime,
+        contributorsListThisPeriod: contributorsListThisPeriod
     };
 }
 
@@ -286,9 +292,10 @@ function getPullRequestMetaData(repoData) {
     var mergedPullRequests = 0;
     var closedPullRequests = 0;
     var openTimes = [];
-    var contributorsList = new Set();
+    var contributorsListAllTime = new Set();
+    var contributorsListThisPeriod = new Set();
     repoData.repository.pullRequests.nodes.forEach(function(pullRequest) {
-        contributorsList.add(pullRequest.author.login);
+        contributorsListAllTime.add(pullRequest.author.login);
 
         if (pullRequest.state === "OPEN") {
             openPullRequests += 1;
@@ -296,6 +303,7 @@ function getPullRequestMetaData(repoData) {
         var timeCreated = new Date(pullRequest.createdAt);
         if (timeCreated > START_DATE && timeCreated < END_DATE) {
             openedPullRequests += 1;
+            contributorsListThisPeriod.add(pullRequest.author.login);
             if (authorIsInternal(pullRequest.authorAssociation)) {
                 openedPullRequestsInternal += 1;
             }
@@ -331,7 +339,8 @@ function getPullRequestMetaData(repoData) {
         mergedPullRequests: mergedPullRequests,
         closedPullRequests: closedPullRequests,
         openTimes: openTimes,
-        contributorsList: contributorsList
+        contributorsListAllTime: contributorsListAllTime,
+        contributorsListThisPeriod: contributorsListThisPeriod
     };
 }
 
@@ -372,7 +381,7 @@ async function writeCSV(data) {
             {id: 'pullRequests', title: 'Pull Requests'},
             {id: 'openPullRequests', title: 'Open Pull Requests'},
             {id: 'averagePullRequestMergeTime', title: 'Average Pull Request Time to Merge (Days)'},
-            {id: 'contributors', title: 'Contributors (All Time)'},
+            {id: 'contributorsAllTime', title: 'Contributors (All Time)'},
 
             // These metrics are for the time period provided through command line arguments
             {id: 'openedIssues', title: 'Issues Opened'},
@@ -385,7 +394,8 @@ async function writeCSV(data) {
             {id: 'openedPullRequestsExternal', title: 'Pull Requests Opened (External)'},
             {id: 'openedPullRequestsFirstTimeContributor', title: 'Pull Requests Opened (First Time Contributor)'},
             {id: 'mergedPullRequests', title: 'Pull Requests Merged'},
-            {id: 'closedPullRequests', title: 'Pull Requests Closed'}
+            {id: 'closedPullRequests', title: 'Pull Requests Closed'},
+            {id: 'contributorsThisPeriod', title: 'Contributors (This Period)'}
             
         ]
     });
