@@ -95,9 +95,9 @@ function processRepo(repo) {
         forks: getForkCount(repo),
         issues: getIssueCount(repo),
         openIssues: issueMetaData[0],
-        openedIssues: issueMetaData[1],
-        closedIssues: issueMetaData[2],
-        staleIssues: issueMetaData[3],
+        staleIssues: issueMetaData[1],
+        openedIssues: issueMetaData[2],
+        closedIssues: issueMetaData[3],
         averageIssueOpenTime: issueMetaData[4],
         pullRequests: getPullRequestCount(repo),
         openPullRequests: pullRequestMetaData[0],
@@ -120,9 +120,9 @@ function aggregateRepoData(repos) {
         forks: repos.map(repo => repo.forks).reduce((a, b) => a + b, 0),
         issues: repos.map(repo => repo.issues).reduce((a, b) => a + b, 0),
         openIssues: repos.map(repo => repo.openIssues).reduce((a, b) => a + b, 0),
+        staleIssues: repos.map(repo => repo.staleIssues).reduce((a, b) => a + b, 0),
         openedIssues: repos.map(repo => repo.openedIssues).reduce((a, b) => a + b, 0),
         closedIssues: repos.map(repo => repo.closedIssues).reduce((a, b) => a + b, 0),
-        staleIssues: repos.map(repo => repo.staleIssues).reduce((a, b) => a + b, 0),
         pullRequests: repos.map(repo => repo.pullRequests).reduce((a, b) => a + b, 0),
         openPullRequests: repos.map(repo => repo.openPullRequests).reduce((a, b) => a + b, 0),
         openedPullRequests: repos.map(repo => repo.openedPullRequests).reduce((a, b) => a + b, 0),
@@ -191,7 +191,7 @@ function getIssueMetaData(repoData) {
     });
     var averageOpenTime = openTimes.reduce((a, b) => a + b, 0) / openTimes.length;
     averageOpenTime = Math.round(averageOpenTime);
-    return [issuesOpen, issuesOpened, issuesClosed, issuesStale, averageOpenTime];
+    return [issuesOpen, issuesStale, issuesOpened, issuesClosed, averageOpenTime];
 }
 
 function getPullRequestMetaData(repoData) {
@@ -271,18 +271,18 @@ async function writeCSV(data) {
             {id: 'forks', title: 'Forks'},
             {id: 'issues', title: 'Issues'},
             {id: 'openIssues', title: 'Open Issues'},
-            {id: 'openedIssues', title: 'Opened Issues'},
-            {id: 'closedIssues', title: 'Closed Issues'},
             {id: 'staleIssues', title: 'Stale Issues'},
+            {id: 'openedIssues', title: 'Issues Opened'},
+            {id: 'closedIssues', title: 'Issues Closed'},
             {id: 'averageIssueOpenTime', title: 'Average Issue Open Time (Days)'},
             {id: 'pullRequests', title: 'Pull Requests'},
             {id: 'openPullRequests', title: 'Open Pull Requests'},
-            {id: 'openedPullRequests', title: 'Opened Pull Requests'},
-            {id: 'internalPullRequestsOpened', title: 'Internal Opened Pull Requests'},
-            {id: 'externalPullRequestsOpened', title: 'External Opened Pull Requests'},
-            {id: 'firstTimeContributorPullRequestsOpened', title: 'First Time Contributor Opened Pull Requests'},
-            {id: 'mergedPullRequests', title: 'Merged Pull Requests'},
-            {id: 'closedPullRequests', title: 'Closed Pull Requests'},
+            {id: 'openedPullRequests', title: 'Pull Requests Opened'},
+            {id: 'internalPullRequestsOpened', title: 'Internal Pull Requests Opened'},
+            {id: 'externalPullRequestsOpened', title: 'External Pull Requests Opened'},
+            {id: 'firstTimeContributorPullRequestsOpened', title: 'First Time Contributor Pull Requests Opened'},
+            {id: 'mergedPullRequests', title: 'Pull Requests Merged'},
+            {id: 'closedPullRequests', title: 'Pull Requests Closed'},
             {id: 'averagePullRequestMergeTime', title: 'Average Pull Request Time to Merge (Days)'}
         ]
     });
