@@ -94,12 +94,12 @@ function processRepo(repo) {
         watches: getWatchCount(repo),
         forks: getForkCount(repo),
         issues: getIssueCount(repo),
-        openIssues: issueMetaData[0],
-        staleIssues: issueMetaData[1],
-        openedIssues: issueMetaData[2],
-        closedIssues: issueMetaData[3],
-        averageIssueOpenTime: issueMetaData[4],
         pullRequests: getPullRequestCount(repo),
+        openIssues: issueMetaData.openIssues,
+        staleIssues: issueMetaData.staleIssues,
+        openedIssues: issueMetaData.openedIssues,
+        closedIssues: issueMetaData.closedIssues,
+        averageIssueOpenTime: issueMetaData.openTimes,
         openPullRequests: pullRequestMetaData[0],
         openedPullRequests: pullRequestMetaData[1],
         internalPullRequestsOpened: pullRequestMetaData[2],
@@ -119,11 +119,11 @@ function aggregateRepoData(repos) {
         watches: repos.map(repo => repo.watches).reduce((a, b) => a + b, 0),
         forks: repos.map(repo => repo.forks).reduce((a, b) => a + b, 0),
         issues: repos.map(repo => repo.issues).reduce((a, b) => a + b, 0),
+        pullRequests: repos.map(repo => repo.pullRequests).reduce((a, b) => a + b, 0),
         openIssues: repos.map(repo => repo.openIssues).reduce((a, b) => a + b, 0),
         staleIssues: repos.map(repo => repo.staleIssues).reduce((a, b) => a + b, 0),
         openedIssues: repos.map(repo => repo.openedIssues).reduce((a, b) => a + b, 0),
         closedIssues: repos.map(repo => repo.closedIssues).reduce((a, b) => a + b, 0),
-        pullRequests: repos.map(repo => repo.pullRequests).reduce((a, b) => a + b, 0),
         openPullRequests: repos.map(repo => repo.openPullRequests).reduce((a, b) => a + b, 0),
         openedPullRequests: repos.map(repo => repo.openedPullRequests).reduce((a, b) => a + b, 0),
         internalPullRequestsOpened: repos.map(repo => repo.internalPullRequestsOpened).reduce((a, b) => a + b, 0),
@@ -160,38 +160,42 @@ function millisecondsToDays(milliseconds) {
 }
 
 function getIssueMetaData(repoData) {
-    var issuesOpen = 0;
-    var issuesOpened = 0;
-    var issuesClosed = 0;
-    var issuesStale = 0;
+    var openIssues = 0;
+    var staleIssues = 0;
+    var openedIssues = 0;
+    var closedIssues = 0;
     var openTimes = [];
     repoData.repository.issues.nodes.forEach(function(issue) {
         if (issue.state === "OPEN") {
-            issuesOpen += 1;
+            openIssues += 1;
             // Last event is either the last event in the timeline or the creation of the issue
             var lastEvent = (issue.timelineItems.nodes[0]) ? issue.timelineItems.nodes[0].createdAt : issue.createdAt;
             lastEvent = new Date(lastEvent);
             if (millisecondsToDays(Date.now() - lastEvent) > 14) {
-                issuesStale += 1;
+                staleIssues += 1;
             }
         }
         var timeCreated = new Date(issue.createdAt);
         if (timeCreated > START_DATE && timeCreated < END_DATE) {
-            issuesOpened += 1;
+            openedIssues += 1;
         }
         if (issue.closedAt) {
             var timeClosed = new Date(issue.closedAt);
             if (timeClosed > START_DATE && timeClosed < END_DATE) {
-                issuesClosed += 1;
+                closedIssues += 1;
             }
             // Time open in days
             var timeOpen = millisecondsToDays(timeClosed - timeCreated);
             openTimes.push(timeOpen);
         }
     });
-    var averageOpenTime = openTimes.reduce((a, b) => a + b, 0) / openTimes.length;
-    averageOpenTime = Math.round(averageOpenTime);
-    return [issuesOpen, issuesStale, issuesOpened, issuesClosed, averageOpenTime];
+    return {
+        openIssues: openIssues,
+        staleIssues: staleIssues,
+        openedIssues: openedIssues,
+        closedIssues: closedIssues,
+        openTimes: openTimes
+    };
 }
 
 function getPullRequestMetaData(repoData) {
@@ -270,12 +274,12 @@ async function writeCSV(data) {
             {id: 'watches', title: 'Watches'},
             {id: 'forks', title: 'Forks'},
             {id: 'issues', title: 'Issues'},
+            {id: 'pullRequests', title: 'Pull Requests'},
             {id: 'openIssues', title: 'Open Issues'},
             {id: 'staleIssues', title: 'Stale Issues'},
             {id: 'openedIssues', title: 'Issues Opened'},
             {id: 'closedIssues', title: 'Issues Closed'},
             {id: 'averageIssueOpenTime', title: 'Average Issue Open Time (Days)'},
-            {id: 'pullRequests', title: 'Pull Requests'},
             {id: 'openPullRequests', title: 'Open Pull Requests'},
             {id: 'openedPullRequests', title: 'Pull Requests Opened'},
             {id: 'internalPullRequestsOpened', title: 'Internal Pull Requests Opened'},
