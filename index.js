@@ -369,13 +369,6 @@ function validateCommandLineArguments() {
         return false;
     }
 
-    // Validate that start date is before end date
-    if (START_DATE > END_DATE) {
-        console.log("Invalid inputs - start date must be before end date.");
-        logExampleCommandLineArguments();
-        return false;
-    }
-
     // Validate that there is at least 1 day between the start and end date
     if (millisecondsToDays(END_DATE - START_DATE) < 1) {
         console.log("Invalid inputs - end date must be at least one day after start date.");
