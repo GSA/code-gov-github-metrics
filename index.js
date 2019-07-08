@@ -103,6 +103,10 @@ function processRepo(repo) {
         openPullRequests: pullRequestMetaData.openPullRequests,
         averagePullRequestMergeTime: averageList(pullRequestMetaData.openTimes),
 
+        // These lists are included in repoData (but not the final .csv) to help with aggregation
+        issueOpenTimes: issueMetaData.openTimes,
+        pullRequestOpenTimes: pullRequestMetaData.openTimes,
+
         // These metrics are for the time period provided through command line arguments
         openedIssues: issueMetaData.openedIssues,
         closedIssues: issueMetaData.closedIssues,
@@ -127,10 +131,10 @@ function aggregateRepoData(repos) {
         issues: sumList(repos.map(repo => repo.issues)),
         openIssues: sumList(repos.map(repo => repo.openIssues)),
         staleIssues: sumList(repos.map(repo => repo.staleIssues)),
-        averageIssueOpenTime: 0,
+        averageIssueOpenTime: averageList(repos.map(repo => repo.issueOpenTimes).reduce((list1, list2) => list1.concat(list2))),
         pullRequests: sumList(repos.map(repo => repo.pullRequests)),
         openPullRequests: sumList(repos.map(repo => repo.openPullRequests)),
-        averagePullRequestMergeTime: 0,
+        averagePullRequestMergeTime: averageList(repos.map(repo => repo.pullRequestOpenTimes).reduce((list1, list2) => list1.concat(list2))),
 
         // These metrics are for the time period provided through command line arguments
         openedIssues: sumList(repos.map(repo => repo.openedIssues)),
@@ -175,7 +179,7 @@ function sumList(list) {
 
 function averageList(list) {
     if (list.length == 0) {
-        return null;
+        return "N/A";
     }
     return Math.round(sumList(list) / list.length);
 }
