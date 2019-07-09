@@ -136,6 +136,121 @@ function isValidDate(date) {
     return date instanceof Date && !isNaN(date);
 }
 
+// GITHUB UTILS 
+
+/**
+ * Calculates the total star count for a repository.
+ * 
+ * @param {JSON} repo repository data from Github API
+ *
+ * @return {Number} total star count for repo
+ */
+function getStarCount(repo) {
+    return repo.repository.stargazers.totalCount;
+}
+
+/**
+ * Calculates the total watch count for a repository.
+ * 
+ * @param {JSON} repo repository data from Github API
+ *
+ * @return {Number} total watch count for repo
+ */
+function getWatchCount(repo) {
+    return repo.repository.watchers.totalCount;
+}
+
+/**
+ * Calculates the total fork count for a repository.
+ * 
+ * @param {JSON} repo repository data from Github API
+ *
+ * @return {Number} total fork count for repo
+ */
+function getForkCount(repo) {
+    return repo.repository.forks.totalCount;
+}
+
+/**
+ * Calculates the total issue count for a repository.
+ * 
+ * @param {JSON} repo repository data from Github API
+ *
+ * @return {Number} total issue count for repo
+ */
+function getIssueCount(repo) {
+    return repo.repository.issues.totalCount;
+}
+
+/**
+ * Calculates the total pull request count for a repository.
+ * 
+ * @param {JSON} repo repository data from Github API
+ *
+ * @return {Number} total pull request count for repo
+ */
+function getPullRequestCount(repo) {
+    return repo.repository.pullRequests.totalCount;
+}
+
+/**
+ * Determines if an authorAssociation indicates the author is internal
+ * 
+ * In this case, an internal author refers to a member of the 
+ * code.gov team (i.e. an owner, member, or collaborator on
+ * the repository being examined)
+ * 
+ * @param {String} authorAssociation authorAssociation from a 
+ * repository's data from GitHub API
+ *
+ * @return {boolean} is the author internal?
+ */
+function authorIsInternal(authorAssociation) {
+    return authorAssociation === "OWNER" || authorAssociation === "MEMBER" || authorAssociation === "COLLABORATOR"; 
+}
+
+/**
+ * Determines if an authorAssociation indicates the author is external
+ * 
+ * In this case, an external author refers to someone who is not
+ * a member of the code.gov team (i.e. a contributor or no association
+ * to the repository being examined)
+ * 
+ * @param {String} authorAssociation authorAssociation from a 
+ * repository's data from GitHub API
+ *
+ * @return {boolean} is the author external?
+ */
+function authorIsExternal(authorAssociation) {
+    return authorAssociation === "FIRST_TIMER" || authorAssociation === "FIRST_TIME_CONTRIBUTOR" || authorAssociation === "CONTRIBUTOR" || authorAssociation === "NONE"; 
+}
+
+/**
+ * Determines if an authorAssociation indicates the author is a 
+ * first time contributor
+ * 
+ * In this case, a first time contributor refers to someone who is not
+ * a member of the code.gov team who has just made their first contribution
+ * to the repository being examined
+ * 
+ * @param {String} authorAssociation authorAssociation from a 
+ * repository's data from GitHub API
+ *
+ * @return {boolean} is the author a first time contributor?
+ */
+function authorIsFirstTimeContributor(authorAssociation) {
+    return authorAssociation === "FIRST_TIMER" || authorAssociation === "FIRST_TIME_CONTRIBUTOR";
+}
+
+// GENERAL UTILS 
+
+/**
+ * Logs an example of the correct format of command line arguments.
+ */
+function logExampleCommandLineArguments() {
+    console.log("For example: node index.js 2019-12-01 2019-12-31");
+}
+
 module.exports = { 
     millisecondsToDays: millisecondsToDays,
     toPercent: toPercent,
@@ -146,5 +261,14 @@ module.exports = {
     unionSetSize: unionSetSize,
     formatDate: formatDate,
     isValidDateString: isValidDateString,
-    isValidDate: isValidDate
+    isValidDate: isValidDate,
+    getStarCount: getStarCount,
+    getWatchCount: getWatchCount,
+    getForkCount: getForkCount,
+    getIssueCount: getIssueCount,
+    getPullRequestCount: getPullRequestCount,
+    authorIsInternal: authorIsInternal,
+    authorIsExternal: authorIsExternal,
+    authorIsFirstTimeContributor: authorIsFirstTimeContributor,
+    logExampleCommandLineArguments: logExampleCommandLineArguments
 };

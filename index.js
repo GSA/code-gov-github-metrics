@@ -1,5 +1,3 @@
-// ******************************** SET UP ********************************
-
 // Use dotenv package to get GitHub Personal Access Token from .env
 require('dotenv').config();
 
@@ -12,124 +10,8 @@ const CONFIG = require('./config.json');
 // Grab queries.js where the GitHub GraphQL queries are stored
 var queries = require('./queries.js');
 
+// Import utils functions from utils.js
 var utils = require('./utils.js');
-
-// GITHUB UTILS 
-
-/**
- * Calculates the total star count for a repository.
- * 
- * @param {JSON} repo repository data from Github API
- *
- * @return {Number} total star count for repo
- */
-function getStarCount(repo) {
-    return repo.repository.stargazers.totalCount;
-}
-
-/**
- * Calculates the total watch count for a repository.
- * 
- * @param {JSON} repo repository data from Github API
- *
- * @return {Number} total watch count for repo
- */
-function getWatchCount(repo) {
-    return repo.repository.watchers.totalCount;
-}
-
-/**
- * Calculates the total fork count for a repository.
- * 
- * @param {JSON} repo repository data from Github API
- *
- * @return {Number} total fork count for repo
- */
-function getForkCount(repo) {
-    return repo.repository.forks.totalCount;
-}
-
-/**
- * Calculates the total issue count for a repository.
- * 
- * @param {JSON} repo repository data from Github API
- *
- * @return {Number} total issue count for repo
- */
-function getIssueCount(repo) {
-    return repo.repository.issues.totalCount;
-}
-
-/**
- * Calculates the total pull request count for a repository.
- * 
- * @param {JSON} repo repository data from Github API
- *
- * @return {Number} total pull request count for repo
- */
-function getPullRequestCount(repo) {
-    return repo.repository.pullRequests.totalCount;
-}
-
-/**
- * Determines if an authorAssociation indicates the author is internal
- * 
- * In this case, an internal author refers to a member of the 
- * code.gov team (i.e. an owner, member, or collaborator on
- * the repository being examined)
- * 
- * @param {String} authorAssociation authorAssociation from a 
- * repository's data from GitHub API
- *
- * @return {boolean} is the author internal?
- */
-function authorIsInternal(authorAssociation) {
-    return authorAssociation === "OWNER" || authorAssociation === "MEMBER" || authorAssociation === "COLLABORATOR"; 
-}
-
-/**
- * Determines if an authorAssociation indicates the author is external
- * 
- * In this case, an external author refers to someone who is not
- * a member of the code.gov team (i.e. a contributor or no association
- * to the repository being examined)
- * 
- * @param {String} authorAssociation authorAssociation from a 
- * repository's data from GitHub API
- *
- * @return {boolean} is the author external?
- */
-function authorIsExternal(authorAssociation) {
-    return authorAssociation === "FIRST_TIMER" || authorAssociation === "FIRST_TIME_CONTRIBUTOR" || authorAssociation === "CONTRIBUTOR" || authorAssociation === "NONE"; 
-}
-
-/**
- * Determines if an authorAssociation indicates the author is a 
- * first time contributor
- * 
- * In this case, a first time contributor refers to someone who is not
- * a member of the code.gov team who has just made their first contribution
- * to the repository being examined
- * 
- * @param {String} authorAssociation authorAssociation from a 
- * repository's data from GitHub API
- *
- * @return {boolean} is the author a first time contributor?
- */
-function authorIsFirstTimeContributor(authorAssociation) {
-    return authorAssociation === "FIRST_TIMER" || authorAssociation === "FIRST_TIME_CONTRIBUTOR";
-}
-
-// GENERAL UTILS 
-
-/**
- * Logs an example of the correct format of command line arguments.
- */
-function logExampleCommandLineArguments() {
-    console.log("For example: node index.js 2019-12-01 2019-12-31");
-}
-
-// ******************************** MAIN PROCESS ********************************
 
 async function queryGitHub(repoName) {
     const endpoint = 'https://api.github.com/graphql';
@@ -227,10 +109,10 @@ function processRepo(repo) {
         repo: repo.repository.name,
 
         // These metrics are for all time as of the time of the script running
-        stars: getStarCount(repo),
-        watches: getWatchCount(repo),
-        forks: getForkCount(repo),
-        issues: getIssueCount(repo),
+        stars: utils.getStarCount(repo),
+        watches: utils.getWatchCount(repo),
+        forks: utils.getForkCount(repo),
+        issues: utils.getIssueCount(repo),
         internalIssues: issueMetaData.internalIssues,
         externalIssues: issueMetaData.externalIssues,
         openIssues: issueMetaData.openIssues,
@@ -240,7 +122,7 @@ function processRepo(repo) {
         percentOldIssues: issueMetaData.openIssues === 0 ? "N/A" : utils.toPercent(issueMetaData.oldIssues / issueMetaData.openIssues),
         percentIssuesClosedByPullRequest: issueMetaData.closedIssuesTotal === 0 ? "N/A" : utils.toPercent(issueMetaData.closedByPullRequestIssues / issueMetaData.closedIssuesTotal),
         averageIssueOpenTime: utils.averageList(issueMetaData.openTimes),
-        pullRequests: getPullRequestCount(repo),
+        pullRequests: utils.getPullRequestCount(repo),
         internalPullRequests: pullRequestMetaData.internalPullRequests,
         externalPullRequests: pullRequestMetaData.externalPullRequests,
         openPullRequests: pullRequestMetaData.openPullRequests,
@@ -358,11 +240,11 @@ function getIssueMetaData(repoData) {
         contributorsListAllTime.add(issue.author.login);
         var timeCreated = new Date(issue.createdAt);
         
-        if (authorIsInternal(issue.authorAssociation)) {
+        if (utils.authorIsInternal(issue.authorAssociation)) {
             contributorsListAllTimeInternal.add(issue.author.login);
             internalIssues += 1;
         }
-        if (authorIsExternal(issue.authorAssociation)) {
+        if (utils.authorIsExternal(issue.authorAssociation)) {
             contributorsListAllTimeExternal.add(issue.author.login);
             externalIssues += 1;
         }
@@ -384,15 +266,15 @@ function getIssueMetaData(repoData) {
         if (timeCreated > START_DATE && timeCreated < END_DATE) {
             openedIssues += 1;
             contributorsListThisPeriod.add(issue.author.login);
-            if (authorIsInternal(issue.authorAssociation)) {
+            if (utils.authorIsInternal(issue.authorAssociation)) {
                 openedIssuesInternal += 1;
                 contributorsListThisPeriodInternal.add(issue.author.login);
             }
-            if (authorIsExternal(issue.authorAssociation)) {
+            if (utils.authorIsExternal(issue.authorAssociation)) {
                 openedIssuesExternal += 1;
                 contributorsListThisPeriodExternal.add(issue.author.login);
             }
-            if (authorIsFirstTimeContributor(issue.authorAssociation)){
+            if (utils.authorIsFirstTimeContributor(issue.authorAssociation)){
                 openedIssuesFirstTimeContributor += 1;
                 contributorsListThisPeriodFirstTimeContributor.add(issue.author.login);
             }
@@ -469,11 +351,11 @@ function getPullRequestMetaData(repoData) {
     repoData.repository.pullRequests.nodes.forEach(function(pullRequest) {
         contributorsListAllTime.add(pullRequest.author.login);
 
-        if (authorIsInternal(pullRequest.authorAssociation)) {
+        if (utils.authorIsInternal(pullRequest.authorAssociation)) {
             contributorsListAllTimeInternal.add(pullRequest.author.login);
             internalPullRequests += 1;
         }
-        if (authorIsExternal(pullRequest.authorAssociation)) {
+        if (utils.authorIsExternal(pullRequest.authorAssociation)) {
             contributorsListAllTimeExternal.add(pullRequest.author.login);
             externalPullRequests += 1;
         }
@@ -485,15 +367,15 @@ function getPullRequestMetaData(repoData) {
         if (timeCreated > START_DATE && timeCreated < END_DATE) {
             openedPullRequests += 1;
             contributorsListThisPeriod.add(pullRequest.author.login);
-            if (authorIsInternal(pullRequest.authorAssociation)) {
+            if (utils.authorIsInternal(pullRequest.authorAssociation)) {
                 openedPullRequestsInternal += 1;
                 contributorsListThisPeriodInternal.add(pullRequest.author.login);
             }
-            if (authorIsExternal(pullRequest.authorAssociation)) {
+            if (utils.authorIsExternal(pullRequest.authorAssociation)) {
                 openedPullRequestsExternal += 1;
                 contributorsListThisPeriodExternal.add(pullRequest.author.login);
             }
-            if (authorIsFirstTimeContributor(pullRequest.authorAssociation)){
+            if (utils.authorIsFirstTimeContributor(pullRequest.authorAssociation)){
                 openedPullRequestsFirstTimeContributor += 1;
                 contributorsListThisPeriodFirstTimeContributor.add(pullRequest.author.login);
             }
@@ -625,14 +507,14 @@ function validateCommandLineArguments() {
     // Validate that there are 4 command line arguments (first 2 are always path to node executable and path to script file)
     if (process.argv.length != 4) {
         console.log("Invalid inputs - please provide exactly 2 command line arguments (start date and end date).");
-        logExampleCommandLineArguments();
+        utils.logExampleCommandLineArguments();
         return false;
     }
 
     // Validate that the command line arguments are in the right form
     if (!utils.isValidDateString(process.argv[2]) || !utils.isValidDateString(process.argv[3])) {
         console.log("Invalid inputs - please provide dates in the format YYYY-MM-DD.");
-        logExampleCommandLineArguments();
+        utils.logExampleCommandLineArguments();
         return false;
     }
 
@@ -646,21 +528,21 @@ function validateCommandLineArguments() {
     // Validate that start date is a valid date
     if (!utils.isValidDate(START_DATE)) {
         console.log("Invalid inputs - please provide a valid start date in the format YYYY-MM-DD.");
-        logExampleCommandLineArguments();
+        utils.logExampleCommandLineArguments();
         return false;
     }
 
     // Validate that end date is a valid date
     if (!utils.isValidDate(END_DATE)) {
         console.log("Invalid inputs - please provide a valid end date in the format YYYY-MM-DD.");
-        logExampleCommandLineArguments();
+        utils.logExampleCommandLineArguments();
         return false;
     }
 
     // Validate that there is at least 1 day between the start and end date
     if (utils.millisecondsToDays(END_DATE - START_DATE) < 1) {
         console.log("Invalid inputs - end date must be at least one day after start date.");
-        logExampleCommandLineArguments();
+        utils.logExampleCommandLineArguments();
         return false;
     }
 
