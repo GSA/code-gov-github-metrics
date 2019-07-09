@@ -171,7 +171,7 @@ function aggregateRepoData(repos) {
         percentStaleIssues: Math.round(staleIssues / openIssues * 100),
         oldIssues: oldIssues,
         percentOldIssues: Math.round(oldIssues / openIssues * 100),
-        averageIssueOpenTime: averageList(repos.map(repo => repo.issueOpenTimes)),
+        averageIssueOpenTime: averageList(concatenateLists(repos.map(repo => repo.issueOpenTimes))),
         pullRequests: sumList(repos.map(repo => repo.pullRequests)),
         internalPullRequests: sumList(repos.map(repo => repo.internalPullRequests)),
         externalPullRequests: sumList(repos.map(repo => repo.externalPullRequests)),
