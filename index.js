@@ -300,7 +300,8 @@ function getIssueMetaData(repoData) {
     var contributorsListThisPeriodFirstTimeContributor = new Set();
     repoData.repository.issues.nodes.forEach(function(issue) {
         contributorsListAllTime.add(issue.author.login);
-
+        var timeCreated = new Date(issue.createdAt);
+        
         if (authorIsInternal(issue.authorAssociation)) {
             contributorsListAllTimeInternal.add(issue.author.login);
             internalIssues += 1;
@@ -320,11 +321,10 @@ function getIssueMetaData(repoData) {
             if (millisecondsToDays(Date.now() - lastEventDate) > 14) {
                 staleIssues += 1;
             }
-            if (millisecondsToDays(Date.now() - issue.createAt) > 120) {
+            if (millisecondsToDays(Date.now() - timeCreated) > 120) {
                 oldIssues += 1;
             }
         }
-        var timeCreated = new Date(issue.createdAt);
         if (timeCreated > START_DATE && timeCreated < END_DATE) {
             openedIssues += 1;
             contributorsListThisPeriod.add(issue.author.login);
