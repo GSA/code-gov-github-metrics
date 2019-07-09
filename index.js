@@ -103,6 +103,8 @@ function processRepo(repo) {
         watches: getWatchCount(repo),
         forks: getForkCount(repo),
         issues: getIssueCount(repo),
+        internalIssues: issueMetaData.internalIssues,
+        externalIssues: issueMetaData.externalIssues,
         openIssues: issueMetaData.openIssues,
         staleIssues: issueMetaData.staleIssues,
         percentStaleIssues: issueMetaData.openIssues === 0 ? "N/A" : Math.round(issueMetaData.staleIssues / issueMetaData.openIssues * 100),
@@ -110,6 +112,8 @@ function processRepo(repo) {
         percentOldIssues: issueMetaData.openIssues === 0 ? "N/A" : Math.round(issueMetaData.oldIssues / issueMetaData.openIssues * 100),
         averageIssueOpenTime: averageList(issueMetaData.openTimes),
         pullRequests: getPullRequestCount(repo),
+        internalPullRequests: pullRequestMetaData.internalPullRequests,
+        externalPullRequests: pullRequestMetaData.externalPullRequests,
         openPullRequests: pullRequestMetaData.openPullRequests,
         averagePullRequestMergeTime: averageList(pullRequestMetaData.openTimes),
         contributorsAllTime: contributorsListAllTime.size,
@@ -160,6 +164,8 @@ function aggregateRepoData(repos) {
         watches: sumList(repos.map(repo => repo.watches)),
         forks: sumList(repos.map(repo => repo.forks)),
         issues: sumList(repos.map(repo => repo.issues)),
+        internalIssues: sumList(repos.map(repo => repo.internalIssues)),
+        externalIssues: sumList(repos.map(repo => repo.externalIssues)),
         openIssues: openIssues,
         staleIssues: staleIssues,
         percentStaleIssues: Math.round(staleIssues / openIssues * 100),
@@ -167,6 +173,8 @@ function aggregateRepoData(repos) {
         percentOldIssues: Math.round(oldIssues / openIssues * 100),
         averageIssueOpenTime: averageList(repos.map(repo => repo.issueOpenTimes)),
         pullRequests: sumList(repos.map(repo => repo.pullRequests)),
+        internalPullRequests: sumList(repos.map(repo => repo.internalPullRequests)),
+        externalPullRequests: sumList(repos.map(repo => repo.externalPullRequests)),
         openPullRequests: sumList(repos.map(repo => repo.openPullRequests)),
         averagePullRequestMergeTime: averageList(concatenateLists(repos.map(repo => repo.pullRequestOpenTimes))),
         contributorsAllTime: unionSetSize(repos.map(repo => repo.contributorsListAllTime)),
@@ -262,6 +270,8 @@ function authorIsFirstTimeContributor(authorAssociation) {
 }
 
 function getIssueMetaData(repoData) {
+    var internalIssues = 0;
+    var externalIssues = 0;
     var openIssues = 0;
     var staleIssues = 0;
     var oldIssues = 0;
@@ -283,9 +293,11 @@ function getIssueMetaData(repoData) {
 
         if (authorIsInternal(issue.authorAssociation)) {
             contributorsListAllTimeInternal.add(issue.author.login);
+            internalIssues += 1;
         }
         if (authorIsExternal(issue.authorAssociation)) {
             contributorsListAllTimeExternal.add(issue.author.login);
+            externalIssues += 1;
         }
 
         if (issue.state === "OPEN") {
@@ -328,6 +340,8 @@ function getIssueMetaData(repoData) {
         }
     });
     return {
+        internalIssues: internalIssues,
+        externalIssues: externalIssues,
         openIssues: openIssues,
         staleIssues: staleIssues,
         oldIssues: oldIssues,
@@ -348,6 +362,8 @@ function getIssueMetaData(repoData) {
 }
 
 function getPullRequestMetaData(repoData) {
+    var internalPullRequests = 0;
+    var externalPullRequests = 0;
     var openPullRequests = 0;
     var openedPullRequests = 0;
     var openedPullRequestsInternal = 0;
@@ -368,9 +384,11 @@ function getPullRequestMetaData(repoData) {
 
         if (authorIsInternal(pullRequest.authorAssociation)) {
             contributorsListAllTimeInternal.add(pullRequest.author.login);
+            internalPullRequests += 1;
         }
         if (authorIsExternal(pullRequest.authorAssociation)) {
             contributorsListAllTimeExternal.add(pullRequest.author.login);
+            externalPullRequests += 1;
         }
 
         if (pullRequest.state === "OPEN") {
@@ -410,6 +428,8 @@ function getPullRequestMetaData(repoData) {
         }
     });
     return {
+        internalPullRequests: internalPullRequests,
+        externalPullRequests: externalPullRequests,
         openPullRequests: openPullRequests,
         openedPullRequests: openedPullRequests,
         openedPullRequestsInternal: openedPullRequestsInternal,
@@ -459,6 +479,8 @@ async function writeCSV(data) {
             {id: 'watches', title: 'Watches'},
             {id: 'forks', title: 'Forks'},
             {id: 'issues', title: 'Issues'},
+            {id: 'internalIssues', title: 'Issues (Internal)'},
+            {id: 'externalIssues', title: 'Issues (External)'},
             {id: 'openIssues', title: 'Open Issues'},
             {id: 'staleIssues', title: 'Stale Issues (No activity for >14 days)'},
             {id: 'percentStaleIssues', title: '% Stale Issues'},
@@ -466,6 +488,8 @@ async function writeCSV(data) {
             {id: 'percentOldIssues', title: '% Old Issues'},
             {id: 'averageIssueOpenTime', title: 'Average Issue Open Time (Days)'},
             {id: 'pullRequests', title: 'Pull Requests'},
+            {id: 'internalPullRequests', title: 'Pull Requests (Internal)'},
+            {id: 'externalPullRequests', title: 'Pull Requests (External)'},
             {id: 'openPullRequests', title: 'Open Pull Requests'},
             {id: 'averagePullRequestMergeTime', title: 'Average Pull Request Time to Merge (Days)'},
             {id: 'contributorsAllTime', title: 'Contributors (All Time)'},
