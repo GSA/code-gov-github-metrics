@@ -12,145 +12,7 @@ const CONFIG = require('./config.json');
 // Grab queries.js where the GitHub GraphQL queries are stored
 var queries = require('./queries.js');
 
-// ******************************** UTILS ********************************
-
-// MATH UTILS
-
-/**
- * Converts milliseconds to days.
- * 
- * @param {Number} milliseconds milliseconds to convert to days
- *
- * @return {Number} days
- */
-function millisecondsToDays(milliseconds) {
-    return milliseconds / 1000 / 60 / 60 / 24;
-}
-
-/**
- * Converts a decimal to a percent.
- * 
- * @param {Number} number decimal to convert to percent
- *
- * @return {Number} percent
- */
-function toPercent(number) {
-    return Math.round(number * 100);
-}
-
-// LIST UTILS
-
-/**
- * Sums the contents of a list.
- * 
- * @param {Array} list list to sum
- *
- * @return {Number} sum of the list
- */
-function sumList(list) {
-    return list.reduce((a, b) => a + b, 0);
-}
-
-/**
- * Averages the contents of a list.
- * 
- * @param {Array} list list to average
- *
- * @return {Number} average of the list
- */
-function averageList(list) {
-    if (list.length == 0) {
-        return "N/A";
-    }
-    return Math.round(sumList(list) / list.length);
-}
-
-/**
- * Concatenates a list of lists into one shallow list.
- * 
- * @param {Array} list list of lists to concatenate
- *
- * @return {Array} concatenated, shallow list
- */
-function concatenateLists(lists) {
-    return lists.reduce((list1, list2) => list1.concat(list2));
-}
-
-// SET UTILS
-
-/**
- * Calculates the union of a group of Sets.
- * 
- * Based on: https://stackoverflow.com/questions/32000865/simplest-way-to-merge-es6-maps-sets
- * 
- * @param {Sets} iterables Sets (as individual arguments)
- *
- * @return {Set} union of the argument Sets
- */
-function unionSets(...iterables) {
-    const set = new Set();
-  
-    for (let iterable of iterables) {
-        for (let item of iterable) {
-            set.add(item);
-        }
-    }
-  
-    return set;
-}
-
-/**
- * Calculates the number of items in the union of a list of sets.
- * 
- * Based on: https://stackoverflow.com/questions/32000865/simplest-way-to-merge-es6-maps-sets
- * 
- * @param {Array} sets list of Set objects
- *
- * @return {Number} size of the union of the argument sets
- */
-function unionSetSize(sets) {
-    return sets.reduce((set1, set2) => unionSets(set1, set2)).size;
-}
-
-// DATE UTILS 
-
-/**
- * Format a Date object as a string in the format YYYY-MM-DD
- * 
- * @param {Date} date Date to convert to a string
- *
- * @return {String} date as String in format YYYY-MM-DD 
- */
-function formatDate(date) {
-    return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-}
-
-/**
- * Validates that dateString is in the proper format.
- *
- * Ensures that dateString is in the proper format to be
- * parsed into a new Date object (YYYY-MM-DD).
- * 
- * @param {String} dateString A date as a string.
- *
- * @return {Boolean} is dateString in the correct format (YYYY-MM-DD)?
- */
-function isValidDateString(dateString) {
-    return /^\d\d\d\d-\d\d-\d\d$/.test(dateString);
-}
-
-/**
- * Validates that a Date object is valid.
- *
- * Ensures that date was created correctly and is valid.
- * 
- * @param {Date} date A Date object.
- *
- * @return {Boolean} is date a valid Date object?
- */
-function isValidDate(date) {
-    return date instanceof Date && !isNaN(date);
-}
+var utils = require('./utils.js');
 
 // GITHUB UTILS 
 
@@ -354,13 +216,13 @@ async function queryPullRequestsDeep(repoName, cursor, pullRequests) {
 function processRepo(repo) {
     var issueMetaData = getIssueMetaData(repo);
     var pullRequestMetaData = getPullRequestMetaData(repo);
-    var contributorsListAllTime = unionSets(issueMetaData.contributorsListAllTime, pullRequestMetaData.contributorsListAllTime);
-    var contributorsListAllTimeInteral = unionSets(issueMetaData.contributorsListAllTimeInternal, pullRequestMetaData.contributorsListAllTimeInternal);
-    var contributorsListAllTimeExternal = unionSets(issueMetaData.contributorsListAllTimeExternal, pullRequestMetaData.contributorsListAllTimeExternal);
-    var contributorsListThisPeriod = unionSets(issueMetaData.contributorsListThisPeriod, pullRequestMetaData.contributorsListThisPeriod);
-    var contributorsListThisPeriodInternal = unionSets(issueMetaData.contributorsListThisPeriodInternal, pullRequestMetaData.contributorsListThisPeriodInternal);
-    var contributorsListThisPeriodExternal = unionSets(issueMetaData.contributorsListThisPeriodExternal, pullRequestMetaData.contributorsListThisPeriodExternal);
-    var contributorsListThisPeriodFirstTimeContributor = unionSets(issueMetaData.contributorsListThisPeriodFirstTimeContributor, pullRequestMetaData.contributorsListThisPeriodFirstTimeContributor);
+    var contributorsListAllTime = utils.unionSets(issueMetaData.contributorsListAllTime, pullRequestMetaData.contributorsListAllTime);
+    var contributorsListAllTimeInteral = utils.unionSets(issueMetaData.contributorsListAllTimeInternal, pullRequestMetaData.contributorsListAllTimeInternal);
+    var contributorsListAllTimeExternal = utils.unionSets(issueMetaData.contributorsListAllTimeExternal, pullRequestMetaData.contributorsListAllTimeExternal);
+    var contributorsListThisPeriod = utils.unionSets(issueMetaData.contributorsListThisPeriod, pullRequestMetaData.contributorsListThisPeriod);
+    var contributorsListThisPeriodInternal = utils.unionSets(issueMetaData.contributorsListThisPeriodInternal, pullRequestMetaData.contributorsListThisPeriodInternal);
+    var contributorsListThisPeriodExternal = utils.unionSets(issueMetaData.contributorsListThisPeriodExternal, pullRequestMetaData.contributorsListThisPeriodExternal);
+    var contributorsListThisPeriodFirstTimeContributor = utils.unionSets(issueMetaData.contributorsListThisPeriodFirstTimeContributor, pullRequestMetaData.contributorsListThisPeriodFirstTimeContributor);
     var repoData = {
         repo: repo.repository.name,
 
@@ -373,16 +235,16 @@ function processRepo(repo) {
         externalIssues: issueMetaData.externalIssues,
         openIssues: issueMetaData.openIssues,
         staleIssues: issueMetaData.staleIssues,
-        percentStaleIssues: issueMetaData.openIssues === 0 ? "N/A" : toPercent(issueMetaData.staleIssues / issueMetaData.openIssues),
+        percentStaleIssues: issueMetaData.openIssues === 0 ? "N/A" : utils.toPercent(issueMetaData.staleIssues / issueMetaData.openIssues),
         oldIssues: issueMetaData.oldIssues,
-        percentOldIssues: issueMetaData.openIssues === 0 ? "N/A" : toPercent(issueMetaData.oldIssues / issueMetaData.openIssues),
-        percentIssuesClosedByPullRequest: issueMetaData.closedIssuesTotal === 0 ? "N/A" : toPercent(issueMetaData.closedByPullRequestIssues / issueMetaData.closedIssuesTotal),
-        averageIssueOpenTime: averageList(issueMetaData.openTimes),
+        percentOldIssues: issueMetaData.openIssues === 0 ? "N/A" : utils.toPercent(issueMetaData.oldIssues / issueMetaData.openIssues),
+        percentIssuesClosedByPullRequest: issueMetaData.closedIssuesTotal === 0 ? "N/A" : utils.toPercent(issueMetaData.closedByPullRequestIssues / issueMetaData.closedIssuesTotal),
+        averageIssueOpenTime: utils.averageList(issueMetaData.openTimes),
         pullRequests: getPullRequestCount(repo),
         internalPullRequests: pullRequestMetaData.internalPullRequests,
         externalPullRequests: pullRequestMetaData.externalPullRequests,
         openPullRequests: pullRequestMetaData.openPullRequests,
-        averagePullRequestMergeTime: averageList(pullRequestMetaData.openTimes),
+        averagePullRequestMergeTime: utils.averageList(pullRequestMetaData.openTimes),
         contributorsAllTime: contributorsListAllTime.size,
         contributorsAllTimeInternal: contributorsListAllTimeInteral.size,
         contributorsAllTimeExternal: contributorsListAllTimeExternal.size,
@@ -422,51 +284,51 @@ function processRepo(repo) {
 }
 
 function aggregateRepoData(repos) {
-    var openIssues = sumList(repos.map(repo => repo.openIssues));
-    var staleIssues = sumList(repos.map(repo => repo.staleIssues));
-    var oldIssues = sumList(repos.map(repo => repo.oldIssues));
+    var openIssues = utils.sumList(repos.map(repo => repo.openIssues));
+    var staleIssues = utils.sumList(repos.map(repo => repo.staleIssues));
+    var oldIssues = utils.sumList(repos.map(repo => repo.oldIssues));
     var totalData = {
         repo: "TOTAL",
 
         // These metrics are for all time as of the time of the script running
-        stars: sumList(repos.map(repo => repo.stars)),
-        watches: sumList(repos.map(repo => repo.watches)),
-        forks: sumList(repos.map(repo => repo.forks)),
-        issues: sumList(repos.map(repo => repo.issues)),
-        internalIssues: sumList(repos.map(repo => repo.internalIssues)),
-        externalIssues: sumList(repos.map(repo => repo.externalIssues)),
+        stars: utils.sumList(repos.map(repo => repo.stars)),
+        watches: utils.sumList(repos.map(repo => repo.watches)),
+        forks: utils.sumList(repos.map(repo => repo.forks)),
+        issues: utils.sumList(repos.map(repo => repo.issues)),
+        internalIssues: utils.sumList(repos.map(repo => repo.internalIssues)),
+        externalIssues: utils.sumList(repos.map(repo => repo.externalIssues)),
         openIssues: openIssues,
         staleIssues: staleIssues,
-        percentStaleIssues: toPercent(staleIssues / openIssues),
+        percentStaleIssues: utils.toPercent(staleIssues / openIssues),
         oldIssues: oldIssues,
-        percentOldIssues: toPercent(oldIssues / openIssues), 
-        percentIssuesClosedByPullRequest: toPercent(sumList(repos.map(repo => repo.closedByPullRequestIssues))/ sumList(repos.map(repo => repo.closedIssuesTotal))),
-        averageIssueOpenTime: averageList(concatenateLists(repos.map(repo => repo.issueOpenTimes))),
-        pullRequests: sumList(repos.map(repo => repo.pullRequests)),
-        internalPullRequests: sumList(repos.map(repo => repo.internalPullRequests)),
-        externalPullRequests: sumList(repos.map(repo => repo.externalPullRequests)),
-        openPullRequests: sumList(repos.map(repo => repo.openPullRequests)),
-        averagePullRequestMergeTime: averageList(concatenateLists(repos.map(repo => repo.pullRequestOpenTimes))),
-        contributorsAllTime: unionSetSize(repos.map(repo => repo.contributorsListAllTime)),
-        contributorsAllTimeInternal: unionSetSize(repos.map(repo => repo.contributorsListAllTimeInternal)),
-        contributorsAllTimeExternal: unionSetSize(repos.map(repo => repo.contributorsListAllTimeExternal)),
+        percentOldIssues: utils.toPercent(oldIssues / openIssues), 
+        percentIssuesClosedByPullRequest: utils.toPercent(utils.sumList(repos.map(repo => repo.closedByPullRequestIssues))/ utils.sumList(repos.map(repo => repo.closedIssuesTotal))),
+        averageIssueOpenTime: utils.averageList(utils.concatenateLists(repos.map(repo => repo.issueOpenTimes))),
+        pullRequests: utils.sumList(repos.map(repo => repo.pullRequests)),
+        internalPullRequests: utils.sumList(repos.map(repo => repo.internalPullRequests)),
+        externalPullRequests: utils.sumList(repos.map(repo => repo.externalPullRequests)),
+        openPullRequests: utils.sumList(repos.map(repo => repo.openPullRequests)),
+        averagePullRequestMergeTime: utils.averageList(utils.concatenateLists(repos.map(repo => repo.pullRequestOpenTimes))),
+        contributorsAllTime: utils.unionSetSize(repos.map(repo => repo.contributorsListAllTime)),
+        contributorsAllTimeInternal: utils.unionSetSize(repos.map(repo => repo.contributorsListAllTimeInternal)),
+        contributorsAllTimeExternal: utils.unionSetSize(repos.map(repo => repo.contributorsListAllTimeExternal)),
 
         // These metrics are for the time period provided through command line arguments
-        openedIssues: sumList(repos.map(repo => repo.openedIssues)),
-        openedIssuesInternal: sumList(repos.map(repo => repo.openedIssuesInternal)),
-        openedIssuesExternal: sumList(repos.map(repo => repo.openedIssuesExternal)),
-        openedIssuesFirstTimeContributor: sumList(repos.map(repo => repo.openedIssuesFirstTimeContributor)),
-        closedIssues: sumList(repos.map(repo => repo.closedIssues)),
-        openedPullRequests: sumList(repos.map(repo => repo.openedPullRequests)),
-        openedPullRequestsInternal: sumList(repos.map(repo => repo.openedPullRequestsInternal)),
-        openedPullRequestsExternal: sumList(repos.map(repo => repo.openedPullRequestsExternal)),
-        openedPullRequestsFirstTimeContributor: sumList(repos.map(repo => repo.openedPullRequestsFirstTimeContributor)),
-        mergedPullRequests: sumList(repos.map(repo => repo.mergedPullRequests)),
-        closedPullRequests: sumList(repos.map(repo => repo.closedPullRequests)),
-        contributorsThisPeriod: unionSetSize(repos.map(repo => repo.contributorsListThisPeriod)),
-        contributorsThisPeriodInternal: unionSetSize(repos.map(repo => repo.contributorsListThisPeriodInternal)),
-        contributorsThisPeriodExternal: unionSetSize(repos.map(repo => repo.contributorsListThisPeriodExternal)),
-        contributorsThisPeriodFirstTimeContributor: unionSetSize(repos.map(repo => repo.contributorsListThisPeriodFirstTimeContributor))
+        openedIssues: utils.sumList(repos.map(repo => repo.openedIssues)),
+        openedIssuesInternal: utils.sumList(repos.map(repo => repo.openedIssuesInternal)),
+        openedIssuesExternal: utils.sumList(repos.map(repo => repo.openedIssuesExternal)),
+        openedIssuesFirstTimeContributor: utils.sumList(repos.map(repo => repo.openedIssuesFirstTimeContributor)),
+        closedIssues: utils.sumList(repos.map(repo => repo.closedIssues)),
+        openedPullRequests: utils.sumList(repos.map(repo => repo.openedPullRequests)),
+        openedPullRequestsInternal: utils.sumList(repos.map(repo => repo.openedPullRequestsInternal)),
+        openedPullRequestsExternal: utils.sumList(repos.map(repo => repo.openedPullRequestsExternal)),
+        openedPullRequestsFirstTimeContributor: utils.sumList(repos.map(repo => repo.openedPullRequestsFirstTimeContributor)),
+        mergedPullRequests: utils.sumList(repos.map(repo => repo.mergedPullRequests)),
+        closedPullRequests: utils.sumList(repos.map(repo => repo.closedPullRequests)),
+        contributorsThisPeriod: utils.unionSetSize(repos.map(repo => repo.contributorsListThisPeriod)),
+        contributorsThisPeriodInternal: utils.unionSetSize(repos.map(repo => repo.contributorsListThisPeriodInternal)),
+        contributorsThisPeriodExternal: utils.unionSetSize(repos.map(repo => repo.contributorsListThisPeriodExternal)),
+        contributorsThisPeriodFirstTimeContributor: utils.unionSetSize(repos.map(repo => repo.contributorsListThisPeriodFirstTimeContributor))
     };
     return totalData;
 }
@@ -512,10 +374,10 @@ function getIssueMetaData(repoData) {
             // Last event is either the last event in the timeline or the creation of the issue
             var lastEventDate = (lastTimelineEvent) ? lastTimelineEvent.createdAt : issue.createdAt;
             lastEventDate = new Date(lastEventDate);
-            if (millisecondsToDays(Date.now() - lastEventDate) > 14) {
+            if (utils.millisecondsToDays(Date.now() - lastEventDate) > 14) {
                 staleIssues += 1;
             }
-            if (millisecondsToDays(Date.now() - timeCreated) > 120) {
+            if (utils.millisecondsToDays(Date.now() - timeCreated) > 120) {
                 oldIssues += 1;
             }
         }
@@ -543,7 +405,7 @@ function getIssueMetaData(repoData) {
                 closedIssues += 1;
             }
             // Time open in days
-            var timeOpen = millisecondsToDays(timeClosed - timeCreated);
+            var timeOpen = utils.millisecondsToDays(timeClosed - timeCreated);
             openTimes.push(timeOpen);
             /** 
              * Use this in case there are multiple closed events - uses the last one to determine
@@ -642,7 +504,7 @@ function getPullRequestMetaData(repoData) {
                 mergedPullRequests += 1;
             }
             // Time open in days
-            var timeOpen = millisecondsToDays(timeMerged - timeCreated);
+            var timeOpen = utils.millisecondsToDays(timeMerged - timeCreated);
             openTimes.push(timeOpen);
         }
         if (pullRequest.closedAt && pullRequest.state === "CLOSED") {
@@ -695,8 +557,8 @@ async function fetchGitHubData() {
 async function writeCSV(data) {
     const createCsvWriter = require('csv-writer').createObjectCsvWriter;
     const now = new Date();
-    const dateString = formatDate(now);
-    const periodString = formatDate(START_DATE) + " -> " + formatDate(END_DATE);
+    const dateString = utils.formatDate(now);
+    const periodString = utils.formatDate(START_DATE) + " -> " + utils.formatDate(END_DATE);
     const csvWriter = createCsvWriter({
         path: 'reports/' + dateString + " | " + periodString + '.csv',
         header: [
@@ -768,7 +630,7 @@ function validateCommandLineArguments() {
     }
 
     // Validate that the command line arguments are in the right form
-    if (!isValidDateString(process.argv[2]) || !isValidDateString(process.argv[3])) {
+    if (!utils.isValidDateString(process.argv[2]) || !utils.isValidDateString(process.argv[3])) {
         console.log("Invalid inputs - please provide dates in the format YYYY-MM-DD.");
         logExampleCommandLineArguments();
         return false;
@@ -782,21 +644,21 @@ function validateCommandLineArguments() {
     END_DATE = new Date(process.argv[3] + " 00:00:00");
 
     // Validate that start date is a valid date
-    if (!isValidDate(START_DATE)) {
+    if (!utils.isValidDate(START_DATE)) {
         console.log("Invalid inputs - please provide a valid start date in the format YYYY-MM-DD.");
         logExampleCommandLineArguments();
         return false;
     }
 
     // Validate that end date is a valid date
-    if (!isValidDate(END_DATE)) {
+    if (!utils.isValidDate(END_DATE)) {
         console.log("Invalid inputs - please provide a valid end date in the format YYYY-MM-DD.");
         logExampleCommandLineArguments();
         return false;
     }
 
     // Validate that there is at least 1 day between the start and end date
-    if (millisecondsToDays(END_DATE - START_DATE) < 1) {
+    if (utils.millisecondsToDays(END_DATE - START_DATE) < 1) {
         console.log("Invalid inputs - end date must be at least one day after start date.");
         logExampleCommandLineArguments();
         return false;
