@@ -251,6 +251,7 @@ function logExampleCommandLineArguments() {
     console.log("For example: node index.js 2019-12-01 2019-12-31");
 }
 
+// Export these utils functions so they can be used in index.js
 module.exports = { 
     millisecondsToDays: millisecondsToDays,
     toPercent: toPercent,

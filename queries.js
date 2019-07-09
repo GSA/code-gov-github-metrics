@@ -303,6 +303,7 @@ const pullRequestsQuery = /* GraphQL */ `
     }
 `
 
+// Export these GraphQL queries so they can be used in index.js
 module.exports = { 
     mainQuery: mainQuery,
     issuesQuery: issuesQuery,
