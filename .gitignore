@@ -89,3 +89,6 @@ typings/
 
 # CSV reports
 *.csv
+
+# .DS_Store
+.DS_Store
