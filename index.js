@@ -88,6 +88,8 @@ async function queryPullRequestsDeep(repoName, cursor, pullRequests) {
 function processRepo(repo) {
     var issueMetaData = getIssueMetaData(repo);
     var pullRequestMetaData = getPullRequestMetaData(repo);
+    var contributorsListAllTime = unionSets(issueMetaData.contributorsListAllTime, pullRequestMetaData.contributorsListAllTime);
+    var contributorsListThisPeriod = unionSets(issueMetaData.contributorsListThisPeriod, pullRequestMetaData.contributorsListThisPeriod);
     var contributorsListThisPeriodInternal = unionSets(issueMetaData.contributorsListThisPeriodInternal, pullRequestMetaData.contributorsListThisPeriodInternal);
     var contributorsListThisPeriodExternal = unionSets(issueMetaData.contributorsListThisPeriodExternal, pullRequestMetaData.contributorsListThisPeriodExternal);
     var contributorsListThisPeriodFirstTimeContributor = unionSets(issueMetaData.contributorsListThisPeriodFirstTimeContributor, pullRequestMetaData.contributorsListThisPeriodFirstTimeContributor);
@@ -108,13 +110,13 @@ function processRepo(repo) {
         pullRequests: getPullRequestCount(repo),
         openPullRequests: pullRequestMetaData.openPullRequests,
         averagePullRequestMergeTime: averageList(pullRequestMetaData.openTimes),
-        contributorsAllTime: unionSets(issueMetaData.contributorsListAllTime, pullRequestMetaData.contributorsListAllTime).size,
+        contributorsAllTime: contributorsListAllTime.size,
 
         // These lists are included in repoData (but not the final .csv) to help with aggregation
         issueOpenTimes: issueMetaData.openTimes,
         pullRequestOpenTimes: pullRequestMetaData.openTimes,
-        contributorsListAllTime: unionSets(issueMetaData.contributorsListAllTime, pullRequestMetaData.contributorsListAllTime),
-        contributorsListThisPeriod: unionSets(issueMetaData.contributorsListThisPeriod, pullRequestMetaData.contributorsListThisPeriod),
+        contributorsListAllTime: contributorsListAllTime,
+        contributorsListThisPeriod: contributorsListThisPeriod,
         contributorsListThisPeriodInternal: contributorsListThisPeriodInternal,
         contributorsListThisPeriodExternal: contributorsListThisPeriodExternal,
         contributorsListThisPeriodFirstTimeContributor: contributorsListThisPeriodFirstTimeContributor,
@@ -131,7 +133,7 @@ function processRepo(repo) {
         openedPullRequestsFirstTimeContributor: pullRequestMetaData.openedPullRequestsFirstTimeContributor,
         mergedPullRequests: pullRequestMetaData.mergedPullRequests,
         closedPullRequests: pullRequestMetaData.closedPullRequests,
-        contributorsThisPeriod: unionSets(issueMetaData.contributorsListThisPeriod, pullRequestMetaData.contributorsListThisPeriod).size,
+        contributorsThisPeriod: contributorsListThisPeriod.size,
         contributorsThisPeriodInternal: contributorsListThisPeriodInternal.size,
         contributorsThisPeriodExternal: contributorsListThisPeriodExternal.size,
         contributorsThisPeriodFirstTimeContributor: contributorsListThisPeriodFirstTimeContributor.size
