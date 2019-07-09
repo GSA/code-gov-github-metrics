@@ -422,18 +422,22 @@ async function fetchGitHubData() {
     var githubPromise;
     var promises = [];
 
+    console.log("Querying GitHub for information about these repositories:");
     repos.forEach(async function(repo) {
         console.log(repo);
         githubPromise = queryGitHub(repo).catch(error => console.error(error));
         promises.push(githubPromise);
     });
 
+    console.log();
+    console.log("Processing repository data ...")
     Promise.all(promises).then(function(repos) {
         var data = repos.map(repo => processRepo(repo));
         var aggregatedData = aggregateRepoData(data);
         data.push(aggregatedData);
         writeCSV(data);
     });
+    console.log();
 }
 
 async function writeCSV(data) {
@@ -441,8 +445,9 @@ async function writeCSV(data) {
     const now = new Date();
     const dateString = utils.formatDate(now);
     const periodString = utils.formatDate(START_DATE) + " -> " + utils.formatDate(END_DATE);
+    const filePath = 'reports/' + dateString + " | " + periodString + '.csv';
     const csvWriter = createCsvWriter({
-        path: 'reports/' + dateString + " | " + periodString + '.csv',
+        path: filePath,
         header: [
             {id: 'repo', title: 'Repo Name'},
 
@@ -488,7 +493,7 @@ async function writeCSV(data) {
         ]
     });
 
-    csvWriter.writeRecords(data).then(() => console.log('The CSV file was written successfully'));
+    csvWriter.writeRecords(data).then(() => console.log('The CSV file ("' + filePath + '") was written successfully'));
 }
 
 // Create global START_DATE and END_DATE variables to be set in the validateCommandLineArguments function
