@@ -110,6 +110,7 @@ function processRepo(repo) {
         percentStaleIssues: issueMetaData.openIssues === 0 ? "N/A" : Math.round(issueMetaData.staleIssues / issueMetaData.openIssues * 100),
         oldIssues: issueMetaData.oldIssues,
         percentOldIssues: issueMetaData.openIssues === 0 ? "N/A" : Math.round(issueMetaData.oldIssues / issueMetaData.openIssues * 100),
+        percentIssuesClosedByPullRequest: issueMetaData.closedIssuesTotal === 0 ? "N/A" : Math.round(issueMetaData.closedByPullRequestIssues / issueMetaData.closedIssuesTotal * 100),
         averageIssueOpenTime: averageList(issueMetaData.openTimes),
         pullRequests: getPullRequestCount(repo),
         internalPullRequests: pullRequestMetaData.internalPullRequests,
@@ -122,6 +123,8 @@ function processRepo(repo) {
 
         // These lists are included in repoData (but not the final .csv) to help with aggregation
         issueOpenTimes: issueMetaData.openTimes,
+        closedByPullRequestIssues: issueMetaData.closedByPullRequestIssues,
+        closedIssuesTotal: issueMetaData.closedIssuesTotal,
         pullRequestOpenTimes: pullRequestMetaData.openTimes,
         contributorsListAllTime: contributorsListAllTime,
         contributorsListAllTimeInternal: contributorsListAllTimeInteral,
@@ -170,7 +173,8 @@ function aggregateRepoData(repos) {
         staleIssues: staleIssues,
         percentStaleIssues: Math.round(staleIssues / openIssues * 100),
         oldIssues: oldIssues,
-        percentOldIssues: Math.round(oldIssues / openIssues * 100),
+        percentOldIssues: Math.round(oldIssues / openIssues * 100), 
+        percentIssuesClosedByPullRequest: toPercent(sumList(repos.map(repo => repo.closedByPullRequestIssues))/ sumList(repos.map(repo => repo.closedIssuesTotal))),
         averageIssueOpenTime: averageList(concatenateLists(repos.map(repo => repo.issueOpenTimes))),
         pullRequests: sumList(repos.map(repo => repo.pullRequests)),
         internalPullRequests: sumList(repos.map(repo => repo.internalPullRequests)),
@@ -257,6 +261,10 @@ function unionSetSize(sets) {
     return sets.reduce((set1, set2) => unionSets(set1, set2)).size;
 }
 
+function toPercent(number) {
+    return Math.round(number * 100);
+}
+
 function authorIsInternal(authorAssociation) {
     return authorAssociation === "OWNER" || authorAssociation === "MEMBER" || authorAssociation === "COLLABORATOR"; 
 }
@@ -275,6 +283,8 @@ function getIssueMetaData(repoData) {
     var openIssues = 0;
     var staleIssues = 0;
     var oldIssues = 0;
+    var closedByPullRequestIssues = 0;
+    var closedIssuesTotal = 0;
     var openedIssues = 0;
     var openedIssuesInternal = 0;
     var openedIssuesExternal = 0;
@@ -332,6 +342,8 @@ function getIssueMetaData(repoData) {
             }
         }
         if (issue.closedAt) {
+            closedIssuesTotal += 1;
+
             var timeClosed = new Date(issue.closedAt);
             if (timeClosed > START_DATE && timeClosed < END_DATE) {
                 closedIssues += 1;
@@ -339,6 +351,20 @@ function getIssueMetaData(repoData) {
             // Time open in days
             var timeOpen = millisecondsToDays(timeClosed - timeCreated);
             openTimes.push(timeOpen);
+            /** Use this in case there are multiple closed events - uses the last one to determine
+             *  if the issue was closed by PR
+             * */ 
+            var closedByPullRequest = false;
+            issue.timelineItems.nodes.forEach(function(timelineItem) {
+                if (timelineItem.__typename === "ClosedEvent") {
+                    if (timelineItem.closer && timelineItem.closer.__typename === "PullRequest") {
+                        closedByPullRequest = true;
+                    }
+                }
+            });
+            if (closedByPullRequest) {
+                closedByPullRequestIssues += 1;
+            }
         }
     });
     return {
@@ -347,6 +373,8 @@ function getIssueMetaData(repoData) {
         openIssues: openIssues,
         staleIssues: staleIssues,
         oldIssues: oldIssues,
+        closedByPullRequestIssues: closedByPullRequestIssues,
+        closedIssuesTotal: closedIssuesTotal,
         openedIssues: openedIssues,
         openedIssuesInternal: openedIssuesInternal,
         openedIssuesExternal: openedIssuesExternal,
@@ -495,6 +523,7 @@ async function writeCSV(data) {
             {id: 'percentStaleIssues', title: '% Stale Issues'},
             {id: 'oldIssues', title: 'Old Issues (Open for >120 days)'},
             {id: 'percentOldIssues', title: '% Old Issues'},
+            {id: 'percentIssuesClosedByPullRequest', title: '% Issues Closed by Pull Request'},
             {id: 'averageIssueOpenTime', title: 'Average Issue Open Time (Days)'},
             {id: 'pullRequests', title: 'Pull Requests'},
             {id: 'internalPullRequests', title: 'Pull Requests (Internal)'},

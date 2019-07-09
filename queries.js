@@ -22,6 +22,15 @@ const mainQuery = /* GraphQL */ `
                             }
                             ... on ClosedEvent {
                                 createdAt
+                                closer {
+                                    __typename
+                                    ... on PullRequest {
+                                        id
+                                    }
+                                    ... on Commit {
+                                        id
+                                    }
+                                }
                             }
                             ... on CommentDeletedEvent {
                                 createdAt
@@ -163,6 +172,15 @@ const issuesQuery = /* GraphQL */ `
                             }
                             ... on ClosedEvent {
                                 createdAt
+                                closer {
+                                    __typename
+                                    ... on PullRequest {
+                                        id
+                                    }
+                                    ... on Commit {
+                                        id
+                                    }
+                                }
                             }
                             ... on CommentDeletedEvent {
                                 createdAt
