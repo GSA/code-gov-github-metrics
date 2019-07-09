@@ -351,8 +351,9 @@ function getIssueMetaData(repoData) {
             // Time open in days
             var timeOpen = millisecondsToDays(timeClosed - timeCreated);
             openTimes.push(timeOpen);
-            /** Use this in case there are multiple closed events - uses the last one to determine
-             *  if the issue was closed by PR
+            /** 
+             * Use this in case there are multiple closed events - uses the last one to determine
+             * if the issue was closed by PR
              * */ 
             var closedByPullRequest = false;
             issue.timelineItems.nodes.forEach(function(timelineItem) {
@@ -617,8 +618,10 @@ function validateCommandLineArguments() {
         return false;
     }
 
-    // Make date objects from the command line arguments
-    // The added time (" 00:00:00") is to fix a small bug in the way the Date is parsed for the .csv file name
+    /**
+     * Make date objects from the command line arguments
+     * The added time (" 00:00:00") is to fix a small bug in the way the Date is parsed for the .csv file name
+     */ 
     START_DATE = new Date(process.argv[2] + " 00:00:00");
     END_DATE = new Date(process.argv[3] + " 00:00:00");
 

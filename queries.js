@@ -6,11 +6,12 @@ const mainQuery = /* GraphQL */ `
                 totalCount
                 nodes {
                     createdAt
+                    state
+                    closedAt
                     author {
                         login
                     }
                     authorAssociation
-                    state
                     timelineItems(last:100) {
                         nodes { 
                             __typename
