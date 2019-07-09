@@ -89,6 +89,8 @@ function processRepo(repo) {
     var issueMetaData = getIssueMetaData(repo);
     var pullRequestMetaData = getPullRequestMetaData(repo);
     var contributorsListAllTime = unionSets(issueMetaData.contributorsListAllTime, pullRequestMetaData.contributorsListAllTime);
+    var contributorsListAllTimeInteral = unionSets(issueMetaData.contributorsListAllTimeInternal, pullRequestMetaData.contributorsListAllTimeInternal);
+    var contributorsListAllTimeExternal = unionSets(issueMetaData.contributorsListAllTimeExternal, pullRequestMetaData.contributorsListAllTimeExternal);
     var contributorsListThisPeriod = unionSets(issueMetaData.contributorsListThisPeriod, pullRequestMetaData.contributorsListThisPeriod);
     var contributorsListThisPeriodInternal = unionSets(issueMetaData.contributorsListThisPeriodInternal, pullRequestMetaData.contributorsListThisPeriodInternal);
     var contributorsListThisPeriodExternal = unionSets(issueMetaData.contributorsListThisPeriodExternal, pullRequestMetaData.contributorsListThisPeriodExternal);
@@ -111,11 +113,15 @@ function processRepo(repo) {
         openPullRequests: pullRequestMetaData.openPullRequests,
         averagePullRequestMergeTime: averageList(pullRequestMetaData.openTimes),
         contributorsAllTime: contributorsListAllTime.size,
+        contributorsAllTimeInternal: contributorsListAllTimeInteral.size,
+        contributorsAllTimeExternal: contributorsListAllTimeExternal.size,
 
         // These lists are included in repoData (but not the final .csv) to help with aggregation
         issueOpenTimes: issueMetaData.openTimes,
         pullRequestOpenTimes: pullRequestMetaData.openTimes,
         contributorsListAllTime: contributorsListAllTime,
+        contributorsListAllTimeInternal: contributorsListAllTimeInteral,
+        contributorsListAllTimeExternal: contributorsListAllTimeExternal,
         contributorsListThisPeriod: contributorsListThisPeriod,
         contributorsListThisPeriodInternal: contributorsListThisPeriodInternal,
         contributorsListThisPeriodExternal: contributorsListThisPeriodExternal,
@@ -164,6 +170,8 @@ function aggregateRepoData(repos) {
         openPullRequests: sumList(repos.map(repo => repo.openPullRequests)),
         averagePullRequestMergeTime: averageList(concatenateLists(repos.map(repo => repo.pullRequestOpenTimes))),
         contributorsAllTime: unionSetSize(repos.map(repo => repo.contributorsListAllTime)),
+        contributorsAllTimeInternal: unionSetSize(repos.map(repo => repo.contributorsListAllTimeInternal)),
+        contributorsAllTimeExternal: unionSetSize(repos.map(repo => repo.contributorsListAllTimeExternal)),
 
         // These metrics are for the time period provided through command line arguments
         openedIssues: sumList(repos.map(repo => repo.openedIssues)),
@@ -264,12 +272,21 @@ function getIssueMetaData(repoData) {
     var closedIssues = 0;
     var openTimes = [];
     var contributorsListAllTime = new Set();
+    var contributorsListAllTimeInternal = new Set();
+    var contributorsListAllTimeExternal = new Set();
     var contributorsListThisPeriod = new Set();
     var contributorsListThisPeriodInternal = new Set();
     var contributorsListThisPeriodExternal = new Set();
     var contributorsListThisPeriodFirstTimeContributor = new Set();
     repoData.repository.issues.nodes.forEach(function(issue) {
         contributorsListAllTime.add(issue.author.login);
+
+        if (authorIsInternal(issue.authorAssociation)) {
+            contributorsListAllTimeInternal.add(issue.author.login);
+        }
+        if (authorIsExternal(issue.authorAssociation)) {
+            contributorsListAllTimeExternal.add(issue.author.login);
+        }
 
         if (issue.state === "OPEN") {
             openIssues += 1;
@@ -321,6 +338,8 @@ function getIssueMetaData(repoData) {
         closedIssues: closedIssues,
         openTimes: openTimes,
         contributorsListAllTime: contributorsListAllTime,
+        contributorsListAllTimeInternal: contributorsListAllTimeInternal,
+        contributorsListAllTimeExternal: contributorsListAllTimeExternal,
         contributorsListThisPeriod: contributorsListThisPeriod,
         contributorsListThisPeriodInternal: contributorsListThisPeriodInternal,
         contributorsListThisPeriodExternal: contributorsListThisPeriodExternal,
@@ -338,12 +357,21 @@ function getPullRequestMetaData(repoData) {
     var closedPullRequests = 0;
     var openTimes = [];
     var contributorsListAllTime = new Set();
+    var contributorsListAllTimeInternal = new Set();
+    var contributorsListAllTimeExternal = new Set();
     var contributorsListThisPeriod = new Set();
     var contributorsListThisPeriodInternal = new Set();
     var contributorsListThisPeriodExternal = new Set();
     var contributorsListThisPeriodFirstTimeContributor = new Set();
     repoData.repository.pullRequests.nodes.forEach(function(pullRequest) {
         contributorsListAllTime.add(pullRequest.author.login);
+
+        if (authorIsInternal(pullRequest.authorAssociation)) {
+            contributorsListAllTimeInternal.add(pullRequest.author.login);
+        }
+        if (authorIsExternal(pullRequest.authorAssociation)) {
+            contributorsListAllTimeExternal.add(pullRequest.author.login);
+        }
 
         if (pullRequest.state === "OPEN") {
             openPullRequests += 1;
@@ -391,6 +419,8 @@ function getPullRequestMetaData(repoData) {
         closedPullRequests: closedPullRequests,
         openTimes: openTimes,
         contributorsListAllTime: contributorsListAllTime,
+        contributorsListAllTimeInternal: contributorsListAllTimeInternal,
+        contributorsListAllTimeExternal: contributorsListAllTimeExternal,
         contributorsListThisPeriod: contributorsListThisPeriod,
         contributorsListThisPeriodInternal: contributorsListThisPeriodInternal,
         contributorsListThisPeriodExternal: contributorsListThisPeriodExternal,
@@ -439,6 +469,8 @@ async function writeCSV(data) {
             {id: 'openPullRequests', title: 'Open Pull Requests'},
             {id: 'averagePullRequestMergeTime', title: 'Average Pull Request Time to Merge (Days)'},
             {id: 'contributorsAllTime', title: 'Contributors (All Time)'},
+            {id: 'contributorsAllTimeInternal', title: 'Contributors (All Time - Internal)'},
+            {id: 'contributorsAllTimeExternal', title: 'Contributors (All Time - External)'},
 
             // These metrics are for the time period provided through command line arguments
             {id: 'openedIssues', title: 'Issues Opened'},
