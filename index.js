@@ -467,10 +467,17 @@ async function fetchGitHubData() {
     });
 }
 
+function formatDate(date) {
+    return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+}
+
 async function writeCSV(data) {
-    const createCsvWriter = require('csv-writer').createObjectCsvWriter;  
-    const csvWriter = createCsvWriter({  
-        path: 'repoData.csv',
+    const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+    const now = new Date();
+    const dateString = formatDate(now);
+    const periodString = formatDate(START_DATE) + " -> " + formatDate(END_DATE);
+    const csvWriter = createCsvWriter({
+        path: 'reports/' + dateString + " | " + periodString + '.csv',
         header: [
             {id: 'repo', title: 'Repo Name'},
 
@@ -580,8 +587,9 @@ function validateCommandLineArguments() {
     }
 
     // Make date objects from the command line arguments
-    START_DATE = new Date(process.argv[2]);
-    END_DATE = new Date(process.argv[3]);
+    // The added time (" 00:00:00") is to fix a small bug in the way the Date is parsed for the .csv file name
+    START_DATE = new Date(process.argv[2] + " 00:00:00");
+    END_DATE = new Date(process.argv[3] + " 00:00:00");
 
     // Validate that start date is a valid date
     if (!isValidDate(START_DATE)) {
