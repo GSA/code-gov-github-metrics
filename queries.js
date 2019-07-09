@@ -11,7 +11,7 @@ const mainQuery = /* GraphQL */ `
                     }
                     authorAssociation
                     state
-                    timelineItems(last:1) {
+                    timelineItems(last:100) {
                         nodes { 
                             __typename
                             ... on AddedToProjectEvent {
@@ -152,7 +152,7 @@ const issuesQuery = /* GraphQL */ `
                         login
                     }
                     authorAssociation
-                    timelineItems(last:1) {
+                    timelineItems(last:100) {
                         nodes { 
                             __typename
                             ... on AddedToProjectEvent {

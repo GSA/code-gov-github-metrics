@@ -302,10 +302,12 @@ function getIssueMetaData(repoData) {
 
         if (issue.state === "OPEN") {
             openIssues += 1;
+            var timelineEvents = issue.timelineItems.nodes;
+            var lastTimelineEvent = timelineEvents[timelineEvents.length - 1];
             // Last event is either the last event in the timeline or the creation of the issue
-            var lastEvent = (issue.timelineItems.nodes[0]) ? issue.timelineItems.nodes[0].createdAt : issue.createdAt;
-            lastEvent = new Date(lastEvent);
-            if (millisecondsToDays(Date.now() - lastEvent) > 14) {
+            var lastEventDate = (lastTimelineEvent) ? lastTimelineEvent.createdAt : issue.createdAt;
+            lastEventDate = new Date(lastEventDate);
+            if (millisecondsToDays(Date.now() - lastEventDate) > 14) {
                 staleIssues += 1;
             }
             if (millisecondsToDays(Date.now() - issue.createAt) > 120) {
