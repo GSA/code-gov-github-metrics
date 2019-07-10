@@ -1,6 +1,8 @@
 # code-gov-github-metrics
 This project compiles and calculates GitHub metrics across [the different repos that make up code.gov](https://github.com/GSA/code-gov) so that the code.gov team can understand and track community contributions and other data points over time.
 
+This project uses the [GitHub GraphQL API v4](https://developer.github.com/v4/).
+
 ## Getting Started
 First clone the repo locally:
 
