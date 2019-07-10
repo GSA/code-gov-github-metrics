@@ -2,9 +2,9 @@
 
 ### Project dependencies
 
-This project is built on some dependencies, all with varying licenses. For a detailed overview of each of these licenses and their dependencies, you can review the `dependency_licenses.json` file in the root directory of this project.
+This project is built on some dependencies, all with varying licenses. For a detailed overview of each of these licenses and their dependencies, you can review the [`dependency_licenses.json`](https://github.com/GSA/code-gov-github-metrics/blob/master/dependency_licenses.json) file in the root directory of this project.
 
-The `dependency_licenses.json` file was created using the [license-checker NPM package](https://www.npmjs.com/package/license-checker) by running the following commands:
+The [`dependency_licenses.json`](https://github.com/GSA/code-gov-github-metrics/blob/master/dependency_licenses.json) file was created using the [license-checker NPM package](https://www.npmjs.com/package/license-checker) by running the following commands:
 
 ```
 npm install -g license-checker
