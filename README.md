@@ -29,10 +29,16 @@ The main script will query the GitHub repositories specified in [`config.json`](
 
 ## Usage
 
-To generate a new report, run a command like the one below. The two command line arguments are the start date and end date of the specific time period you want to generate data for. Both dates should be in the format `YYYY-MM-DD`. The script will convert these dates to Date objects that correspond to midnight GMT on those days. If you fail to specify dates or specify invalid dates, the script should let you know.
+To generate a new report, run a command like the one below:
 
 ```
-node index.js 2019-06-01 2019-07-01
+node index.js <START OF TIME PERIOD TO QUERY> <END OF TIME PERIOD TO QUERY>
+```
+
+The two command line arguments are the start date and end date of the specific time period you want to generate data for. Both dates should be in the format `YYYY-MM-DD`. The script will convert these dates to Date objects that correspond to midnight GMT on those days. If you fail to specify dates or specify invalid dates, the script should let you know. For example, the following command would generate a report for December 2018:
+
+```
+node index.js 2018-12-01 2018-12-31
 ```
 
 ### .csv report
@@ -40,6 +46,19 @@ node index.js 2019-06-01 2019-07-01
 Running this script will create a .csv file report in the reports folder with the name `<CURRENT DATE> | <START OF TIME PERIOD TO QUERY> -> <END OF TIME PERIOD TO QUERY>.csv`. For instance, if you ran the script on July 9, 2019 to query data about the month of June 2019 (6/1/2019 - 7/1/2019), the report file name would be `2019-7-9 | 2019-6-1 -> 2019-7-1.csv`.
 
 The report will contain a number of metrics both about the repositories both for all time and for the specific time period you specified. The descriptions/definitions of these metrics can be found in [DATASCHEMA](https://github.com/GSA/code-gov-github-metrics/blob/master/DATASCHEMA.md)
+
+### Saving and visualizing reports
+
+For the code.gov team, reports should be run monthly on a regular schedule to keep track of these metrics over time. These reports should be uploaded to the [GitHub Metrics Google Sheet](https://docs.google.com/spreadsheets/d/1eCsV5zP61ITM3iQLwcEv425iweS6CW0q-tn4lAQKxpI/edit?usp=drive_web&ouid=103780763461647783609) in the code.gov team drive. To upload a new report:
+
+* In the Google Sheet, click on `File > Import`
+* Click `Upload`
+* Select the report that was just generated
+* Choose `Insert new sheet(s)` as `Import location`
+* Copy the last line of the report into a new line in the `Data Over Time` sheet
+* Change `TOTAL` to the month the report was generated for (e.g. `June 2019 `)
+
+After following these steps, the report will be saved in Google Sheets (which is important because the reports are included the `.gitignore` and therefore not committed to GitHub). The new data will also be automatically added to the visualizations in the different visualization sheets.
 
 ## Contributing
 
