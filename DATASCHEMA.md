@@ -39,7 +39,7 @@ The first set of metrics is based on the entire history of the repository as of 
 The second set is based on the specific time period provided through command line arguments:
 
 | Metric Name                                | Unit   | Description                         |
-| ------------------------------------------ |:------:| :----------------------------------:|
+| :----------------------------------------- |:------:| :-----------------------------------|
 | Issues Opened                              | #      | # of issues opened during the period ❗ |
 | Issues Opened (Internal)                   | #      | # of issues opened by an internal author during the period ❗ |
 | Issues Opened (External)                   | #      | # of issues opened by an external author during the period ❗ |
