@@ -229,9 +229,8 @@ function authorIsExternal(authorAssociation) {
  * Determines if an authorAssociation indicates the author is a 
  * first time contributor
  * 
- * In this case, a first time contributor refers to someone who is not
- * a member of the code.gov team who has just made their first contribution
- * to the repository being examined
+ * In this case, a first time contributor refers to an external contributor
+ * who has just made their first contribution to the repository being examined
  * 
  * @param {String} authorAssociation authorAssociation from a 
  * repository's data from GitHub API
