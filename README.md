@@ -25,7 +25,7 @@ Now, [create a GitHub Personal Access Token](https://help.github.com/en/articles
 
 ## Configuration
 
-The main script will query the GitHub repositories specified in `config.json`. In this file, `owner` refers to the GitHub organization that owns the repositories (in this case, GSA) and `repoList` is the list of repositories to include in the report. This script should be reusable for different organizations/repositories by changing `config.json` accordingly. 
+The main script will query the GitHub repositories specified in [`config.json`](https://github.com/GSA/code-gov-github-metrics/blob/master/config.json). In this file, `owner` refers to the GitHub organization that owns the repositories (in this case, GSA) and `repoList` is the list of repositories to include in the report. This script should be reusable for different organizations/repositories by changing [`config.json`](https://github.com/GSA/code-gov-github-metrics/blob/master/config.json) accordingly. 
 
 ## Usage
 
