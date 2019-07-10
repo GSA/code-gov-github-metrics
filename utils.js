@@ -19,7 +19,7 @@ function millisecondsToDays(milliseconds) {
  * @return {Number} percent
  */
 function toPercent(number) {
-    return Math.round(number * 100);
+    return Math.round(number * 100) + "%";
 }
 
 // LIST UTILS
@@ -247,7 +247,7 @@ function authorIsFirstTimeContributor(authorAssociation) {
  * Logs an example of the correct format of command line arguments.
  */
 function logExampleCommandLineArguments() {
-    console.log("For example: node index.js 2019-12-01 2019-12-31");
+    console.log("For example: node index.js 2018-12-01 2018-12-31");
 }
 
 // Export these utils functions so they can be used in index.js
