@@ -34,13 +34,13 @@ The main script will query the GitHub repositories specified in [`config.json`](
 To generate a new report, run a command like the one below:
 
 ```
-node index.js <START OF TIME PERIOD TO QUERY> <END OF TIME PERIOD TO QUERY>
+npm run start <START OF TIME PERIOD TO QUERY> <END OF TIME PERIOD TO QUERY>
 ```
 
 The two command line arguments are the start date and end date of the specific time period you want to generate data for. Both dates should be in the format `YYYY-MM-DD`. The script will convert these dates to Date objects that correspond to midnight GMT on those days. If you fail to specify dates or specify invalid dates, the script should let you know. For example, the following command would generate a report for December 2018:
 
 ```
-node index.js 2018-12-01 2018-12-31
+npm run start 2018-12-01 2018-12-31
 ```
 
 ### .csv report
