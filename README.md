@@ -58,7 +58,7 @@ For the code.gov team, reports should be run monthly on a regular schedule to ke
 * Select the report that was just generated
 * Choose `Insert new sheet(s)` as `Import location`
 * Copy the last line of the report into a new line in the `Data Over Time` sheet
-* Change `TOTAL` to the month the report was generated for (e.g. `June 2019 `)
+* Change `TOTAL` to the month the report was generated for (e.g. `June 2019`)
 
 After following these steps, the report will be saved in Google Sheets (which is important because the reports are included the `.gitignore` and therefore not committed to GitHub). The new data will also be automatically added to the visualizations in the different visualization sheets.
 
