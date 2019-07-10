@@ -13,29 +13,43 @@ var queries = require('./queries.js');
 // Import utils functions from utils.js
 var utils = require('./utils.js');
 
+/**
+ * Queries the GitHub API for information about a 
+ * specific repo and returns the resulting data.
+ * 
+ * @param {String} repoName repo to query
+ *
+ * @return {JSON} the data for the repo
+ */
 async function queryGitHub(repoName) {
     const endpoint = 'https://api.github.com/graphql';
 
+    // Create a graphQLClient
     const graphQLClient = new GraphQLClient(endpoint, {
         headers: {
             authorization: 'Bearer ' + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
         },
     });
 
+    // Get the main query from queries.js
     const query = queries.mainQuery;
 
+    // Set the query variables
     const variables = {
         owner: CONFIG.owner,
         repo: repoName
     };
 
+    // Request the data
     const dataJSON = await graphQLClient.request(query, variables);
 
+    // If the repo has more than 100 issues, get the rest of the issues
     if (dataJSON.repository.issues.pageInfo.hasNextPage) {
         var issues = await queryIssuesDeep(repoName, dataJSON.repository.issues.pageInfo.endCursor, dataJSON.repository.issues.nodes);
         dataJSON.repository.issues.nodes = issues;
     }
 
+    // If the repo has more than 100 pull requests, get the rest of the pull requests
     if (dataJSON.repository.pullRequests.pageInfo.hasNextPage) {
         var pullRequests = await queryPullRequestsDeep(repoName, dataJSON.repository.pullRequests.pageInfo.endCursor, dataJSON.repository.pullRequests.nodes);
         dataJSON.repository.pullRequests.nodes = pullRequests;
@@ -44,26 +58,43 @@ async function queryGitHub(repoName) {
     return dataJSON;
 }
 
+/**
+ * Recursively queries GitHub for 100 additional issues
+ * until all of the issues have been retrieved.
+ * 
+ * @param {String} repoName repo to query
+ * @param {String} cursor index of issue to start at
+ * @param {Array} issues running list of issues
+ *
+ * @return {Array} all the issues for the repo
+ */
 async function queryIssuesDeep(repoName, cursor, issues) {
     const endpoint = 'https://api.github.com/graphql';
   
+    // Create a graphQLClient
     const graphQLClient = new GraphQLClient(endpoint, {
         headers: {
             authorization: 'Bearer ' + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
         },
     });
   
+    // Get the issues query from queries.js
     const query = queries.issuesQuery;
   
+    // Set the query variables
     const variables = {
         owner: CONFIG.owner,
         repo: repoName,
         cursor: cursor
     };
   
+    // Request the additional issues
     const dataJSON = await graphQLClient.request(query, variables);
+
+    // Push the new issues to the running issue list
     dataJSON.repository.issues.nodes.forEach(issue => {issues.push(issue)});
 
+    // Recurse if there are still more issues
     if (dataJSON.repository.issues.pageInfo.hasNextPage) {
         return await queryIssuesDeep(repoName, dataJSON.repository.issues.pageInfo.endCursor, issues);
     }
@@ -71,26 +102,43 @@ async function queryIssuesDeep(repoName, cursor, issues) {
     return issues;
 }
 
+/**
+ * Recursively queries GitHub for 100 additional pull requests
+ * until all of the pull requests have been retrieved.
+ * 
+ * @param {String} repoName repo to query
+ * @param {String} cursor index of pull request to start at
+ * @param {Array} pullRequests running list of pull requests
+ *
+ * @return {Array} all the pull requests for the repo
+ */
 async function queryPullRequestsDeep(repoName, cursor, pullRequests) {
     const endpoint = 'https://api.github.com/graphql';
   
+    // Create a graphQLClient
     const graphQLClient = new GraphQLClient(endpoint, {
         headers: {
             authorization: 'Bearer ' + process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
         },
     });
 
+    // Get the pull requests query from queries.js
     const query = queries.pullRequestsQuery;
   
+    // Set the query variables
     const variables = {
         owner: CONFIG.owner,
         repo: repoName,
         cursor: cursor
     };
-  
+
+    // Request the additional pull requests
     const dataJSON = await graphQLClient.request(query, variables);
+
+    // Push the new pull requests to the running pull requests list
     dataJSON.repository.pullRequests.nodes.forEach(pullRequest => {pullRequests.push(pullRequest)});
 
+    // Recurse if there are still more pull requests
     if (dataJSON.repository.pullRequests.pageInfo.hasNextPage) {
         return await queryIssuesDeep(repoName, dataJSON.repository.pullRequests.pageInfo.endCursor, pullRequests);
     }
@@ -98,7 +146,17 @@ async function queryPullRequestsDeep(repoName, cursor, pullRequests) {
     return pullRequests;
 }
 
+/**
+ * Processes the raw repo data from GitHub by calculating 
+ * the relevant metrics and returning a JSON of these metrics
+ * for the .csv report.
+ * 
+ * @param {JSON} repo raw data from GitHub API
+ *
+ * @return {JSON} a JSON of metrics calculated for repo
+ */
 function processRepo(repo) {
+    // Set up
     var issueMetaData = getIssueMetaData(repo);
     var pullRequestMetaData = getPullRequestMetaData(repo);
     var contributorsListAllTime = utils.unionSets(issueMetaData.contributorsListAllTime, pullRequestMetaData.contributorsListAllTime);
@@ -108,6 +166,8 @@ function processRepo(repo) {
     var contributorsListThisPeriodInternal = utils.unionSets(issueMetaData.contributorsListThisPeriodInternal, pullRequestMetaData.contributorsListThisPeriodInternal);
     var contributorsListThisPeriodExternal = utils.unionSets(issueMetaData.contributorsListThisPeriodExternal, pullRequestMetaData.contributorsListThisPeriodExternal);
     var contributorsListThisPeriodFirstTimeContributor = utils.unionSets(issueMetaData.contributorsListThisPeriodFirstTimeContributor, pullRequestMetaData.contributorsListThisPeriodFirstTimeContributor);
+    
+    // Make JSON of processed data
     var repoData = {
         repo: repo.repository.name,
 
@@ -168,10 +228,21 @@ function processRepo(repo) {
     return repoData;
 }
 
+/**
+ * Aggregate data across all of the processed repos
+ * to calculate total metrics.
+ * 
+ * @param {Array} repos list of processed repo data
+ *
+ * @return {JSON} a JSON of metrics calculated for all repos
+ */
 function aggregateRepoData(repos) {
+    // Set up
     var openIssues = utils.sumList(repos.map(repo => repo.openIssues));
     var staleIssues = utils.sumList(repos.map(repo => repo.staleIssues));
     var oldIssues = utils.sumList(repos.map(repo => repo.oldIssues));
+
+    // Make JSON of aggregate processed data
     var totalData = {
         repo: "TOTAL",
 
@@ -420,12 +491,20 @@ function getPullRequestMetaData(repoData) {
     };
 }
 
-async function fetchGitHubData() {
+/**
+ * Queries GitHub for information about each repository,
+ * processes that data, and sends it to a helper function
+ * to write it to a .csv report
+ */
+async function fetchProcessAndWriteGitHubData() {
+    // Get list of repos from config.json
     repos = CONFIG.repoList;
     var githubPromise;
     var promises = [];
 
     console.log("Querying GitHub for information about these repositories:");
+
+    // Query github for information about each repo and store the promises
     repos.forEach(async function(repo) {
         console.log(repo);
         githubPromise = queryGitHub(repo).catch(error => console.error(error));
@@ -434,6 +513,13 @@ async function fetchGitHubData() {
 
     console.log();
     console.log("Processing repository data ...")
+
+    /** 
+     * Once all of the promises have resolved, process each repo to create
+     * an array of processed repo data (for the .csv report). Aggregate the
+     * data across repos into a final entry in the data (for overall numbers)
+     * and then write the data to a .csv file
+     */
     Promise.all(promises).then(function(repos) {
         var data = repos.map(repo => processRepo(repo));
         var aggregatedData = aggregateRepoData(data);
@@ -561,5 +647,5 @@ function validateCommandLineArguments() {
 // Validate command line arguments before starting the main process
 if (validateCommandLineArguments()) {
     // Start the main process
-    fetchGitHubData();
+    fetchProcessAndWriteGitHubData();
 }
