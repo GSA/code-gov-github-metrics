@@ -47,7 +47,7 @@ node index.js 2018-12-01 2018-12-31
 
 Running this script will create a .csv file report in the reports folder with the name `<CURRENT DATE> | <START OF TIME PERIOD TO QUERY> -> <END OF TIME PERIOD TO QUERY>.csv`. For instance, if you ran the script on July 9, 2019 to query data about the month of June 2019 (6/1/2019 - 7/1/2019), the report file name would be `2019-7-9 | 2019-6-1 -> 2019-7-1.csv`.
 
-The report will contain a number of metrics both about the repositories both for all time and for the specific time period you specified. The descriptions/definitions of these metrics can be found in [DATASCHEMA](https://github.com/GSA/code-gov-github-metrics/blob/master/DATASCHEMA.md)
+The report will contain a number of metrics both about the repositories both for all time and for the specific time period you specified. The descriptions/definitions of these metrics can be found in [DATASCHEMA](https://github.com/GSA/code-gov-github-metrics/blob/master/DATASCHEMA.md).
 
 ### Saving and visualizing reports
 
@@ -61,6 +61,8 @@ For the code.gov team, reports should be run monthly on a regular schedule to ke
 * Change `TOTAL` to the month the report was generated for (e.g. `June 2019 `)
 
 After following these steps, the report will be saved in Google Sheets (which is important because the reports are included the `.gitignore` and therefore not committed to GitHub). The new data will also be automatically added to the visualizations in the different visualization sheets.
+
+Ideally, these process would happen every month on the first day of the month (with a report generated for the previous month) so that the "All Time" data and visualizations reflects an accurate snapshot of the repository data at that moment in time (since the first group of metrics is calculated based on the current status of the repositories regardless of the command line arguments specified).
 
 ## Contributing
 
