@@ -25,6 +25,7 @@ async function queryGitHub(repoName) {
     const query = queries.mainQuery;
 
     const variables = {
+        owner: CONFIG.owner,
         repo: repoName
     };
 
@@ -55,6 +56,7 @@ async function queryIssuesDeep(repoName, cursor, issues) {
     const query = queries.issuesQuery;
   
     const variables = {
+        owner: CONFIG.owner,
         repo: repoName,
         cursor: cursor
     };
@@ -81,6 +83,7 @@ async function queryPullRequestsDeep(repoName, cursor, pullRequests) {
     const query = queries.pullRequestsQuery;
   
     const variables = {
+        owner: CONFIG.owner,
         repo: repoName,
         cursor: cursor
     };

@@ -1,6 +1,6 @@
 const mainQuery = /* GraphQL */ `
-    query GitHub($repo: String!) {
-        repository(owner:"GSA", name:$repo) {
+    query GitHub($owner: String!, $repo: String!) {
+        repository(owner:$owner, name:$repo) {
             name
             issues(first:100) {
                 totalCount
@@ -149,8 +149,8 @@ const mainQuery = /* GraphQL */ `
 `
 
 const issuesQuery = /* GraphQL */ `
-    query GitHub($repo: String!, $cursor: String!) {
-        repository(owner:"GSA", name:$repo) {
+    query GitHub($owner: String!, $repo: String!, $cursor: String!) {
+        repository(owner:$owner, name:$repo) {
             name
             issues(first:100, after:$cursor) {
                 totalCount
@@ -272,8 +272,8 @@ const issuesQuery = /* GraphQL */ `
 `
 
 const pullRequestsQuery = /* GraphQL */ `
-    query GitHub($repo: String!, $cursor: String!) {
-        repository(owner:"GSA", name:$repo) {
+    query GitHub($owner: String!, $repo: String!, $cursor: String!) {
+        repository(owner:$owner, name:$repo) {
             name
             pullRequests(first:100, after:$cursor) {
                 totalCount
