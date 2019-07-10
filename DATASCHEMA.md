@@ -8,6 +8,8 @@ In the .csv report, there will be a row for each repository listed in the repoLi
 
 ### Metrics
 
+#### Metrics for all time
+
 The first set of metrics is based on the entire history of the repository as of the time of the script running:
 
 | Metric Name                                | Unit   | Description                         |
@@ -23,7 +25,7 @@ The first set of metrics is based on the entire history of the repository as of 
 | % Stale Issues                             | %      | % of open issues that are stale ❗ |
 | Old Issues                                 | #      | # of issues currently old ❗ |
 | % Old Issues                               | %      | % of open issues that are old ❗ |
-| % Issues Closed by Pull Request            | %      | % of closed issues that were closed by Pull Request ❗ |
+| % Issues Closed by Pull Request            | %      | % of closed issues that were closed by a pull request ❗ |
 | Average Issue Open Time (Days)             | Days   | Average time from an issue being opened to being closed ⌚ |
 | Pull Requests                              | #      | # of pull requests (all time) 🛵 |
 | Pull Requests (Internal)                   | #      | # of pull requests (all time) created by an internal contributor 🛵 |
@@ -34,7 +36,7 @@ The first set of metrics is based on the entire history of the repository as of 
 | Contributors (All Time - Internal)         | #      | Number of internal contributors who have made a contribution to the repo at any point 👩🏽‍💻 |
 | Contributors (All Time - External)         | #      | Number of external contributors who have made a contribution to the repo at any point 👩🏽‍💻 |
 
-
+#### Metrics for the specific time period provided
 
 The second set is based on the specific time period provided through command line arguments:
 
@@ -51,6 +53,7 @@ The second set is based on the specific time period provided through command lin
 | Contributors (This Period - Internal)      | #      | Number of internal contributors who have made a contribution to the repo during the period 👩🏽‍💻 |
 | Contributors (This Period - External)      | #      | Number of external contributors who have made a contribution to the repo during the period 👩🏽‍💻 |
 
+#### Aggregate metrics
 
 Finally, the last row of the .csv report aggregates these same metrics for all of the repositories.
 
@@ -71,7 +74,7 @@ Finally, the last row of the .csv report aggregates these same metrics for all o
 
 **Old Issue:** an open issue that has been open for more than 120 days based on when the report was run
 
-**Closed by Pull Request:** an issue that was closed [by a reference in a pull request](https://github.blog/2013-05-14-closing-issues-via-pull-requests/)
+**Closed by a pull request:** an issue that was closed [by a reference in a pull request](https://github.blog/2013-05-14-closing-issues-via-pull-requests/)
 
 🛵: The 🛵 emoji is an unofficial symbol of a VSPR (Very Special Pull Request) which, obviously, all of our pull requests are
 
