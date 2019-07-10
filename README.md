@@ -31,7 +31,11 @@ The main script will query the GitHub repositories specified in [`config.json`](
 
 ## Contributing
 
+See [CONTRIBUTING](https://github.com/GSA/code-gov-github-metrics/blob/master/CONTRIBUTING.md)
+
 ## License
+
+See [LICENSE](https://github.com/GSA/code-gov-github-metrics/blob/master/LICENSE.md)
 
 ## Questions?
 If you have questions, please feel free to contact us:  
