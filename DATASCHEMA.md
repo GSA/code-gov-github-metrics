@@ -16,8 +16,8 @@ The first set of metrics is based on the entire history of the repository as of 
 | Watches                                    | #      | # of watches 👀 |
 | Forks                                      | #      | # of forks 🍴 |
 | Issues                                     | #      | # of issues (all time) ❗ |
-| Issues (Internal)                          | #      | # of issues (all time) created by an internal author ❗ |
-| Issues (External)                          | #      | # of issues (all time) created by an external author ❗ |
+| Issues (Internal)                          | #      | # of issues (all time) created by an internal contributor ❗ |
+| Issues (External)                          | #      | # of issues (all time) created by an external contributor ❗ |
 | Open Issues                                | #      | # of issues currently open ❗ |
 | Stale Issues                               | #      | # of issues currently stale ❗ |
 | % Stale Issues                             | %      | % of open issues that are stale ❗ |
@@ -26,13 +26,13 @@ The first set of metrics is based on the entire history of the repository as of 
 | % Issues Closed by Pull Request            | %      | % of closed issues that were closed by Pull Request ❗ |
 | Average Issue Open Time (Days)             | Days   | Average time from an issue being opened to being closed ⌚ |
 | Pull Requests                              | #      | # of pull requests (all time) 🛵 |
-| Pull Requests (Internal)                   | #      | # of pull requests (all time) created by an internal author 🛵 |
-| Pull Requests (External)                   | #      | # of pull requests (all time) created by an external author 🛵 |
+| Pull Requests (Internal)                   | #      | # of pull requests (all time) created by an internal contributor 🛵 |
+| Pull Requests (External)                   | #      | # of pull requests (all time) created by an external contributor 🛵 |
 | Open Pull Requests                         | #      | # of pull requests currently open 🛵 |
 | Average Pull Request Time to Merge (Days)  | Days   | Average time from a pull request being opened to being merged ⌚ |
 | Contributors (All Time)                    | #      | Number of people who have made a contribution to the repo at any point 👩🏽‍💻 |
-| Contributors (All Time - Internal)         | #      | Number of internal authors who have made a contribution to the repo at any point 👩🏽‍💻 |
-| Contributors (All Time - External)         | #      | Number of external authors who have made a contribution to the repo at any point 👩🏽‍💻 |
+| Contributors (All Time - Internal)         | #      | Number of internal contributors who have made a contribution to the repo at any point 👩🏽‍💻 |
+| Contributors (All Time - External)         | #      | Number of external contributors who have made a contribution to the repo at any point 👩🏽‍💻 |
 
 
 
@@ -41,16 +41,15 @@ The second set is based on the specific time period provided through command lin
 | Metric Name                                | Unit   | Description                         |
 | :----------------------------------------- |:------:| :-----------------------------------|
 | Issues Opened                              | #      | # of issues opened during the period ❗ |
-| Issues Opened (Internal)                   | #      | # of issues opened by an internal author during the period ❗ |
-| Issues Opened (External)                   | #      | # of issues opened by an external author during the period ❗ |
-| Issues Opened (External)                   | #      | # of issues opened by an external author during the period ❗ |
+| Issues Opened (Internal)                   | #      | # of issues opened by an internal contributor during the period ❗ |
+| Issues Opened (External)                   | #      | # of issues opened by an external contributor during the period ❗ |
 | Issues Opened (First Time Contributor)     | #      | # of issues opened by a first time contributor during the period ❗ |
 | Issues Closed                              | #      | # of issues closed during the period ❌ |
 | Pull Requests Merged                       | #      | # of pull requests merged during the period :squirrel: |
 | Pull Requests Closed                       | #      | # of pull requests closed during the period ❌ |
 | Contributors (This Period)                 | #      | Number of people who have made a contribution to the repo during the period 👩🏽‍💻 |
-| Contributors (This Period - Internal)      | #      | Number of internal authors who have made a contribution to the repo during the period 👩🏽‍💻 |
-| Contributors (This Period - External)      | #      | Number of external authors who have made a contribution to the repo during the period 👩🏽‍💻 |
+| Contributors (This Period - Internal)      | #      | Number of internal contributors who have made a contribution to the repo during the period 👩🏽‍💻 |
+| Contributors (This Period - External)      | #      | Number of external contributors who have made a contribution to the repo during the period 👩🏽‍💻 |
 
 
 Finally, the last row of the .csv report aggregates these same metrics for all of the repositories.
@@ -59,11 +58,9 @@ Finally, the last row of the .csv report aggregates these same metrics for all o
 
 **Contributor**:
 
-**Author:** Author is just another word for contributor that is used in the GitHub GraphQL API schema to describe who took an action (like creating an issue).
+**Internal contributors:**
 
-**Internal author:**
-
-**External author:**
+**External contributors:**
 
 **First time contributor:**
 
