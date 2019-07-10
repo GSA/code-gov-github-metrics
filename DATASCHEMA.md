@@ -54,21 +54,24 @@ The second set is based on the specific time period provided through command lin
 
 Finally, the last row of the .csv report aggregates these same metrics for all of the repositories.
 
-### Other Definitions
+### Definitions
 
-**Contributor**:
+**Contributor**: a GitHub user who has either opened an issue or opened a pull request. This is, admittedly, not an ideal metric for a 2 reasons:
 
-**Internal contributors:**
+1. People can make contributions in a number of ways beyond issues/pull requests (like mockups, UX research, documentation, and more)
+2. The main script uses usernames to identify unique users (because the GitHub GraphQL API unfortunately doesn't provide a unique ID for each user). Therefore, if a GitHub user make a contribution, changes their username, and then makes another contribution, they will be counted as two contributors
 
-**External contributors:**
+**Internal contributors:** a contributor who is a member of the code.gov team (i.e. an owner, member, or collaborator on the repository being examined)
 
-**First time contributor:**
+**External contributors:** a contributor who is not a member of the code.gov team (i.e. a contributor or no assocation to the repository being examined)
 
-**Stale Issue:**
+**First time contributor:** an external contributor who has just made their first contribution to the repository being examined
 
-**Old Issue:**
+**Stale Issue:** an open issue that has not had any activity (comment, label change, assignment, etc.) for at least 14 days based on when the report was run
 
-**Closed by Pull Request:**
+**Old Issue:** an open issue that has been open for more than 120 days based on when the report was run
+
+**Closed by Pull Request:** an issue that was closed [by a reference in a pull request](https://github.blog/2013-05-14-closing-issues-via-pull-requests/)
 
 🛵: The 🛵 emoji is an unofficial symbol of a VSPR (Very Special Pull Request) which, obviously, all of our pull requests are
 
