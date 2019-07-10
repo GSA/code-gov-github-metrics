@@ -229,6 +229,265 @@ function processRepo(repo) {
 }
 
 /**
+ * Calculates issue meta deta for a repo (e.g. number
+ * of open issues)
+ * 
+ * @param {JSON} repo raw data from GitHub API
+ *
+ * @return {JSON} a JSON of metrics calculated for the issues 
+ * of that repo
+ */
+function getIssueMetaData(repo) {
+    // Set up
+    var internalIssues = 0;
+    var externalIssues = 0;
+    var openIssues = 0;
+    var staleIssues = 0;
+    var oldIssues = 0;
+    var closedByPullRequestIssues = 0;
+    var closedIssuesTotal = 0;
+    var openedIssues = 0;
+    var openedIssuesInternal = 0;
+    var openedIssuesExternal = 0;
+    var openedIssuesFirstTimeContributor = 0;
+    var closedIssues = 0;
+    var openTimes = [];
+    var contributorsListAllTime = new Set();
+    var contributorsListAllTimeInternal = new Set();
+    var contributorsListAllTimeExternal = new Set();
+    var contributorsListThisPeriod = new Set();
+    var contributorsListThisPeriodInternal = new Set();
+    var contributorsListThisPeriodExternal = new Set();
+    var contributorsListThisPeriodFirstTimeContributor = new Set();
+
+    // Iterate through each issue of the repo
+    repo.repository.issues.nodes.forEach(function(issue) {
+        // Add contributor to all time contributors list
+        contributorsListAllTime.add(issue.author.login);
+        
+        // Add contributor to all time internal/external contributor list
+        if (utils.authorIsInternal(issue.authorAssociation)) {
+            contributorsListAllTimeInternal.add(issue.author.login);
+            internalIssues += 1;
+        }
+        if (utils.authorIsExternal(issue.authorAssociation)) {
+            contributorsListAllTimeExternal.add(issue.author.login);
+            externalIssues += 1;
+        }
+
+        // Calculate the time created for use later on
+        var timeCreated = new Date(issue.createdAt);
+
+        if (issue.state === "OPEN") {
+            openIssues += 1;
+            var timelineEvents = issue.timelineItems.nodes;
+            var lastTimelineEvent = timelineEvents[timelineEvents.length - 1];
+            // Last event is either the last event in the timeline or the creation of the issue
+            var lastEventDate = (lastTimelineEvent) ? lastTimelineEvent.createdAt : issue.createdAt;
+            lastEventDate = new Date(lastEventDate);
+
+            // Determine if issue is stale (no activity for >14 days)
+            if (utils.millisecondsToDays(Date.now() - lastEventDate) > 14) {
+                staleIssues += 1;
+            }
+
+            // Determine if issue is old (open for >120 days)
+            if (utils.millisecondsToDays(Date.now() - timeCreated) > 120) {
+                oldIssues += 1;
+            }
+        }
+
+        // Check if issue was created during the time period specified
+        if (timeCreated > START_DATE && timeCreated < END_DATE) {
+            openedIssues += 1;
+
+            // Add contributor to this period's contributors list
+            contributorsListThisPeriod.add(issue.author.login);
+
+            // Add contributor to this period's internal/external/first time contributor list
+            if (utils.authorIsInternal(issue.authorAssociation)) {
+                openedIssuesInternal += 1;
+                contributorsListThisPeriodInternal.add(issue.author.login);
+            }
+            if (utils.authorIsExternal(issue.authorAssociation)) {
+                openedIssuesExternal += 1;
+                contributorsListThisPeriodExternal.add(issue.author.login);
+            }
+            if (utils.authorIsFirstTimeContributor(issue.authorAssociation)){
+                openedIssuesFirstTimeContributor += 1;
+                contributorsListThisPeriodFirstTimeContributor.add(issue.author.login);
+            }
+        }
+
+        if (issue.closedAt) {
+            closedIssuesTotal += 1;
+
+            var timeClosed = new Date(issue.closedAt);
+
+            // Check if issue was closed during the time period specified
+            if (timeClosed > START_DATE && timeClosed < END_DATE) {
+                closedIssues += 1;
+            }
+
+            // Calculate time open in days
+            var timeOpen = utils.millisecondsToDays(timeClosed - timeCreated);
+            openTimes.push(timeOpen);
+
+            /** 
+             * Use this in case there are multiple closed events - uses the last one to determine
+             * if the issue was closed by PR
+             * */ 
+            var closedByPullRequest = false;
+            issue.timelineItems.nodes.forEach(function(timelineItem) {
+                if (timelineItem.__typename === "ClosedEvent") {
+                    if (timelineItem.closer && timelineItem.closer.__typename === "PullRequest") {
+                        closedByPullRequest = true;
+                    }
+                }
+            });
+            if (closedByPullRequest) {
+                closedByPullRequestIssues += 1;
+            }
+        }
+    });
+    return {
+        internalIssues: internalIssues,
+        externalIssues: externalIssues,
+        openIssues: openIssues,
+        staleIssues: staleIssues,
+        oldIssues: oldIssues,
+        closedByPullRequestIssues: closedByPullRequestIssues,
+        closedIssuesTotal: closedIssuesTotal,
+        openedIssues: openedIssues,
+        openedIssuesInternal: openedIssuesInternal,
+        openedIssuesExternal: openedIssuesExternal,
+        openedIssuesFirstTimeContributor: openedIssuesFirstTimeContributor,
+        closedIssues: closedIssues,
+        openTimes: openTimes,
+        contributorsListAllTime: contributorsListAllTime,
+        contributorsListAllTimeInternal: contributorsListAllTimeInternal,
+        contributorsListAllTimeExternal: contributorsListAllTimeExternal,
+        contributorsListThisPeriod: contributorsListThisPeriod,
+        contributorsListThisPeriodInternal: contributorsListThisPeriodInternal,
+        contributorsListThisPeriodExternal: contributorsListThisPeriodExternal,
+        contributorsListThisPeriodFirstTimeContributor: contributorsListThisPeriodFirstTimeContributor
+    };
+}
+
+/**
+ * Calculates pull request meta deta for a repo (e.g. number
+ * of open pull requests)
+ * 
+ * @param {JSON} repo raw data from GitHub API
+ *
+ * @return {JSON} a JSON of metrics calculated for the pull requests 
+ * of that repo
+ */
+function getPullRequestMetaData(repo) {
+    // Set up 
+    var internalPullRequests = 0;
+    var externalPullRequests = 0;
+    var openPullRequests = 0;
+    var openedPullRequests = 0;
+    var openedPullRequestsInternal = 0;
+    var openedPullRequestsExternal = 0;
+    var openedPullRequestsFirstTimeContributor = 0;
+    var mergedPullRequests = 0;
+    var closedPullRequests = 0;
+    var openTimes = [];
+    var contributorsListAllTime = new Set();
+    var contributorsListAllTimeInternal = new Set();
+    var contributorsListAllTimeExternal = new Set();
+    var contributorsListThisPeriod = new Set();
+    var contributorsListThisPeriodInternal = new Set();
+    var contributorsListThisPeriodExternal = new Set();
+    var contributorsListThisPeriodFirstTimeContributor = new Set();
+
+    // Iterate through each pull request of the repo
+    repo.repository.pullRequests.nodes.forEach(function(pullRequest) {
+        // Add contributor to all time contributors list
+        contributorsListAllTime.add(pullRequest.author.login);
+
+        // Add contributor to all time internal/external contributor list
+        if (utils.authorIsInternal(pullRequest.authorAssociation)) {
+            contributorsListAllTimeInternal.add(pullRequest.author.login);
+            internalPullRequests += 1;
+        }
+        if (utils.authorIsExternal(pullRequest.authorAssociation)) {
+            contributorsListAllTimeExternal.add(pullRequest.author.login);
+            externalPullRequests += 1;
+        }
+
+        // Calculate the time created for use later on
+        var timeCreated = new Date(pullRequest.createdAt);
+       
+        if (pullRequest.state === "OPEN") {
+            openPullRequests += 1;
+        }
+
+        // Check if pull request was created during the time period specified
+        if (timeCreated > START_DATE && timeCreated < END_DATE) {
+            openedPullRequests += 1;
+
+            // Add contributor to this period's contributors list
+            contributorsListThisPeriod.add(pullRequest.author.login);
+
+            // Add contributor to this period's internal/external/first time contributor list
+            if (utils.authorIsInternal(pullRequest.authorAssociation)) {
+                openedPullRequestsInternal += 1;
+                contributorsListThisPeriodInternal.add(pullRequest.author.login);
+            }
+            if (utils.authorIsExternal(pullRequest.authorAssociation)) {
+                openedPullRequestsExternal += 1;
+                contributorsListThisPeriodExternal.add(pullRequest.author.login);
+            }
+            if (utils.authorIsFirstTimeContributor(pullRequest.authorAssociation)){
+                openedPullRequestsFirstTimeContributor += 1;
+                contributorsListThisPeriodFirstTimeContributor.add(pullRequest.author.login);
+            }
+        }
+
+        // Check if pull request was merged during the time period specified
+        if (pullRequest.mergedAt && pullRequest.state === "MERGED") {
+            var timeMerged = new Date(pullRequest.mergedAt);
+            if (timeMerged > START_DATE && timeMerged < END_DATE) {
+                mergedPullRequests += 1;
+            }
+            // Calculate time open in days
+            var timeOpen = utils.millisecondsToDays(timeMerged - timeCreated);
+            openTimes.push(timeOpen);
+        }
+
+        // Check if pull request was closed during the time period specified
+        if (pullRequest.closedAt && pullRequest.state === "CLOSED") {
+            var timeClosed = new Date(pullRequest.closedAt);
+            if (timeClosed > START_DATE && timeClosed < END_DATE) {
+                closedPullRequests += 1;
+            }
+        }
+    });
+    return {
+        internalPullRequests: internalPullRequests,
+        externalPullRequests: externalPullRequests,
+        openPullRequests: openPullRequests,
+        openedPullRequests: openedPullRequests,
+        openedPullRequestsInternal: openedPullRequestsInternal,
+        openedPullRequestsExternal: openedPullRequestsExternal,
+        openedPullRequestsFirstTimeContributor: openedPullRequestsFirstTimeContributor,
+        mergedPullRequests: mergedPullRequests,
+        closedPullRequests: closedPullRequests,
+        openTimes: openTimes,
+        contributorsListAllTime: contributorsListAllTime,
+        contributorsListAllTimeInternal: contributorsListAllTimeInternal,
+        contributorsListAllTimeExternal: contributorsListAllTimeExternal,
+        contributorsListThisPeriod: contributorsListThisPeriod,
+        contributorsListThisPeriodInternal: contributorsListThisPeriodInternal,
+        contributorsListThisPeriodExternal: contributorsListThisPeriodExternal,
+        contributorsListThisPeriodFirstTimeContributor: contributorsListThisPeriodFirstTimeContributor
+    };
+}
+
+/**
  * Aggregate data across all of the processed repos
  * to calculate total metrics.
  * 
@@ -289,208 +548,6 @@ function aggregateRepoData(repos) {
     return totalData;
 }
 
-function getIssueMetaData(repoData) {
-    var internalIssues = 0;
-    var externalIssues = 0;
-    var openIssues = 0;
-    var staleIssues = 0;
-    var oldIssues = 0;
-    var closedByPullRequestIssues = 0;
-    var closedIssuesTotal = 0;
-    var openedIssues = 0;
-    var openedIssuesInternal = 0;
-    var openedIssuesExternal = 0;
-    var openedIssuesFirstTimeContributor = 0;
-    var closedIssues = 0;
-    var openTimes = [];
-    var contributorsListAllTime = new Set();
-    var contributorsListAllTimeInternal = new Set();
-    var contributorsListAllTimeExternal = new Set();
-    var contributorsListThisPeriod = new Set();
-    var contributorsListThisPeriodInternal = new Set();
-    var contributorsListThisPeriodExternal = new Set();
-    var contributorsListThisPeriodFirstTimeContributor = new Set();
-    repoData.repository.issues.nodes.forEach(function(issue) {
-        contributorsListAllTime.add(issue.author.login);
-        var timeCreated = new Date(issue.createdAt);
-        
-        if (utils.authorIsInternal(issue.authorAssociation)) {
-            contributorsListAllTimeInternal.add(issue.author.login);
-            internalIssues += 1;
-        }
-        if (utils.authorIsExternal(issue.authorAssociation)) {
-            contributorsListAllTimeExternal.add(issue.author.login);
-            externalIssues += 1;
-        }
-
-        if (issue.state === "OPEN") {
-            openIssues += 1;
-            var timelineEvents = issue.timelineItems.nodes;
-            var lastTimelineEvent = timelineEvents[timelineEvents.length - 1];
-            // Last event is either the last event in the timeline or the creation of the issue
-            var lastEventDate = (lastTimelineEvent) ? lastTimelineEvent.createdAt : issue.createdAt;
-            lastEventDate = new Date(lastEventDate);
-            if (utils.millisecondsToDays(Date.now() - lastEventDate) > 14) {
-                staleIssues += 1;
-            }
-            if (utils.millisecondsToDays(Date.now() - timeCreated) > 120) {
-                oldIssues += 1;
-            }
-        }
-        if (timeCreated > START_DATE && timeCreated < END_DATE) {
-            openedIssues += 1;
-            contributorsListThisPeriod.add(issue.author.login);
-            if (utils.authorIsInternal(issue.authorAssociation)) {
-                openedIssuesInternal += 1;
-                contributorsListThisPeriodInternal.add(issue.author.login);
-            }
-            if (utils.authorIsExternal(issue.authorAssociation)) {
-                openedIssuesExternal += 1;
-                contributorsListThisPeriodExternal.add(issue.author.login);
-            }
-            if (utils.authorIsFirstTimeContributor(issue.authorAssociation)){
-                openedIssuesFirstTimeContributor += 1;
-                contributorsListThisPeriodFirstTimeContributor.add(issue.author.login);
-            }
-        }
-        if (issue.closedAt) {
-            closedIssuesTotal += 1;
-
-            var timeClosed = new Date(issue.closedAt);
-            if (timeClosed > START_DATE && timeClosed < END_DATE) {
-                closedIssues += 1;
-            }
-            // Time open in days
-            var timeOpen = utils.millisecondsToDays(timeClosed - timeCreated);
-            openTimes.push(timeOpen);
-            /** 
-             * Use this in case there are multiple closed events - uses the last one to determine
-             * if the issue was closed by PR
-             * */ 
-            var closedByPullRequest = false;
-            issue.timelineItems.nodes.forEach(function(timelineItem) {
-                if (timelineItem.__typename === "ClosedEvent") {
-                    if (timelineItem.closer && timelineItem.closer.__typename === "PullRequest") {
-                        closedByPullRequest = true;
-                    }
-                }
-            });
-            if (closedByPullRequest) {
-                closedByPullRequestIssues += 1;
-            }
-        }
-    });
-    return {
-        internalIssues: internalIssues,
-        externalIssues: externalIssues,
-        openIssues: openIssues,
-        staleIssues: staleIssues,
-        oldIssues: oldIssues,
-        closedByPullRequestIssues: closedByPullRequestIssues,
-        closedIssuesTotal: closedIssuesTotal,
-        openedIssues: openedIssues,
-        openedIssuesInternal: openedIssuesInternal,
-        openedIssuesExternal: openedIssuesExternal,
-        openedIssuesFirstTimeContributor: openedIssuesFirstTimeContributor,
-        closedIssues: closedIssues,
-        openTimes: openTimes,
-        contributorsListAllTime: contributorsListAllTime,
-        contributorsListAllTimeInternal: contributorsListAllTimeInternal,
-        contributorsListAllTimeExternal: contributorsListAllTimeExternal,
-        contributorsListThisPeriod: contributorsListThisPeriod,
-        contributorsListThisPeriodInternal: contributorsListThisPeriodInternal,
-        contributorsListThisPeriodExternal: contributorsListThisPeriodExternal,
-        contributorsListThisPeriodFirstTimeContributor: contributorsListThisPeriodFirstTimeContributor
-    };
-}
-
-function getPullRequestMetaData(repoData) {
-    var internalPullRequests = 0;
-    var externalPullRequests = 0;
-    var openPullRequests = 0;
-    var openedPullRequests = 0;
-    var openedPullRequestsInternal = 0;
-    var openedPullRequestsExternal = 0;
-    var openedPullRequestsFirstTimeContributor = 0;
-    var mergedPullRequests = 0;
-    var closedPullRequests = 0;
-    var openTimes = [];
-    var contributorsListAllTime = new Set();
-    var contributorsListAllTimeInternal = new Set();
-    var contributorsListAllTimeExternal = new Set();
-    var contributorsListThisPeriod = new Set();
-    var contributorsListThisPeriodInternal = new Set();
-    var contributorsListThisPeriodExternal = new Set();
-    var contributorsListThisPeriodFirstTimeContributor = new Set();
-    repoData.repository.pullRequests.nodes.forEach(function(pullRequest) {
-        contributorsListAllTime.add(pullRequest.author.login);
-
-        if (utils.authorIsInternal(pullRequest.authorAssociation)) {
-            contributorsListAllTimeInternal.add(pullRequest.author.login);
-            internalPullRequests += 1;
-        }
-        if (utils.authorIsExternal(pullRequest.authorAssociation)) {
-            contributorsListAllTimeExternal.add(pullRequest.author.login);
-            externalPullRequests += 1;
-        }
-
-        if (pullRequest.state === "OPEN") {
-            openPullRequests += 1;
-        }
-        var timeCreated = new Date(pullRequest.createdAt);
-        if (timeCreated > START_DATE && timeCreated < END_DATE) {
-            openedPullRequests += 1;
-            contributorsListThisPeriod.add(pullRequest.author.login);
-            if (utils.authorIsInternal(pullRequest.authorAssociation)) {
-                openedPullRequestsInternal += 1;
-                contributorsListThisPeriodInternal.add(pullRequest.author.login);
-            }
-            if (utils.authorIsExternal(pullRequest.authorAssociation)) {
-                openedPullRequestsExternal += 1;
-                contributorsListThisPeriodExternal.add(pullRequest.author.login);
-            }
-            if (utils.authorIsFirstTimeContributor(pullRequest.authorAssociation)){
-                openedPullRequestsFirstTimeContributor += 1;
-                contributorsListThisPeriodFirstTimeContributor.add(pullRequest.author.login);
-            }
-        }
-        if (pullRequest.mergedAt && pullRequest.state === "MERGED") {
-            var timeMerged = new Date(pullRequest.mergedAt);
-            if (timeMerged > START_DATE && timeMerged < END_DATE) {
-                mergedPullRequests += 1;
-            }
-            // Time open in days
-            var timeOpen = utils.millisecondsToDays(timeMerged - timeCreated);
-            openTimes.push(timeOpen);
-        }
-        if (pullRequest.closedAt && pullRequest.state === "CLOSED") {
-            var timeClosed = new Date(pullRequest.closedAt);
-            if (timeClosed > START_DATE && timeClosed < END_DATE) {
-                closedPullRequests += 1;
-            }
-        }
-    });
-    return {
-        internalPullRequests: internalPullRequests,
-        externalPullRequests: externalPullRequests,
-        openPullRequests: openPullRequests,
-        openedPullRequests: openedPullRequests,
-        openedPullRequestsInternal: openedPullRequestsInternal,
-        openedPullRequestsExternal: openedPullRequestsExternal,
-        openedPullRequestsFirstTimeContributor: openedPullRequestsFirstTimeContributor,
-        mergedPullRequests: mergedPullRequests,
-        closedPullRequests: closedPullRequests,
-        openTimes: openTimes,
-        contributorsListAllTime: contributorsListAllTime,
-        contributorsListAllTimeInternal: contributorsListAllTimeInternal,
-        contributorsListAllTimeExternal: contributorsListAllTimeExternal,
-        contributorsListThisPeriod: contributorsListThisPeriod,
-        contributorsListThisPeriodInternal: contributorsListThisPeriodInternal,
-        contributorsListThisPeriodExternal: contributorsListThisPeriodExternal,
-        contributorsListThisPeriodFirstTimeContributor: contributorsListThisPeriodFirstTimeContributor
-    };
-}
-
 /**
  * Queries GitHub for information about each repository,
  * processes that data, and sends it to a helper function
@@ -529,12 +586,22 @@ async function fetchProcessAndWriteGitHubData() {
     console.log();
 }
 
+/**
+ * Writes the data for each repo as well as all repos into
+ * a .csv report in the reports folder.
+ * 
+ * @param {Array} data data for each repo + all repos
+ */
 async function writeCSV(data) {
     const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+
+    // Format filename
     const now = new Date();
     const dateString = utils.formatDate(now);
     const periodString = utils.formatDate(START_DATE) + " -> " + utils.formatDate(END_DATE);
     const filePath = 'reports/' + dateString + " | " + periodString + '.csv';
+
+    // Make CSV writer with the column ids and headings
     const csvWriter = createCsvWriter({
         path: filePath,
         header: [
@@ -582,6 +649,7 @@ async function writeCSV(data) {
         ]
     });
 
+    // Write the .csv file and log when successful
     csvWriter.writeRecords(data).then(() => console.log('The CSV file ("' + filePath + '") was written successfully'));
 }
 
