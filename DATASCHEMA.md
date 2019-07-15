@@ -54,7 +54,8 @@ Finally, the last row of the .csv report aggregates these same metrics for all o
 **Contributor**: a GitHub user who has either opened an issue or opened a pull request. This is, admittedly, not an ideal metric for a 2 reasons:
 
 1. People can make contributions in a number of ways beyond issues/pull requests (like mockups, UX research, documentation, and more)
-2. The main script uses usernames to identify unique users (because the GitHub GraphQL API unfortunately doesn't provide a unique ID for each user). Therefore, if a GitHub user make a contribution, changes their username, and then makes another contribution, they will be counted as two contributors
+2. The main script uses usernames to identify unique users (because the GitHub GraphQL API unfortunately doesn't provide a unique ID for each user). Therefore, if a GitHub user make a contribution, changes their username, and then makes another contribution, they will be counted as two contributorr
+3. If a contributor transitions from internal to external or vice versa (e.g. a code.gov team member who leaves the team but continues to make contributions as an external contributor), they will also be counted as 2 different contributors
 
 **Internal contributors:** a contributor who is a member of the code.gov team (i.e. an owner, member, or collaborator on the repository being examined)
 
