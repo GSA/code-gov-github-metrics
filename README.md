@@ -60,7 +60,7 @@ For the code.gov team, reports should be run monthly on a regular schedule to ke
 * Copy the last line of the report into a new line in the `Data Over Time` sheet
 * Change `TOTAL` to the month the report was generated for (e.g. `June 2019`)
 
-After following these steps, the report will be saved in Google Sheets (which is important because the reports are included the `.gitignore` and therefore not committed to GitHub). The new data will also be automatically added to the visualizations in the different visualization sheets.
+After following these steps, the report will be saved in Google Sheets (which is important because the reports are included the [`.gitignore`](https://github.com/GSA/code-gov-github-metrics/blob/master/.gitignore) and therefore not committed to GitHub). The new data will also be automatically added to the visualizations in the different visualization sheets.
 
 Ideally, these process would happen every month on the first day of the month (with a report generated for the previous month) so that the "All Time" data and visualizations reflects an accurate snapshot of the repository data at that moment in time (since the first group of metrics is calculated based on the current status of the repositories regardless of the command line arguments specified).
 
