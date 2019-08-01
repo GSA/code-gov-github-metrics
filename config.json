@@ -16,6 +16,13 @@
         "json-schema-validator-web-component", 
         "code-gov-about-page", 
         "code-gov-fscp-react-component", 
-        "code-gov-data"
+        "code-gov-data",
+        "code-gov-stats",
+        "code-gov-stats-jupyter-notebook",
+        "code-gov-verify-agency-jsons",
+        "code-gov-converter",
+        "code-gov-repo-template",
+        "code-gov-github-metrics",
+        "code-gov-open-source-toolkit"
     ]
 }
