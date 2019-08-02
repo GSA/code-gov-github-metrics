@@ -51,7 +51,7 @@ The report will contain a number of metrics both about the repositories both for
 
 ### Saving and visualizing reports
 
-For the code.gov team, reports should be run monthly on a regular schedule to keep track of these metrics over time. These reports should be uploaded to the [GitHub Metrics Google Sheet](https://docs.google.com/spreadsheets/d/1eCsV5zP61ITM3iQLwcEv425iweS6CW0q-tn4lAQKxpI/edit?usp=drive_web&ouid=103780763461647783609) in the code.gov team drive. To upload a new report:
+For the code.gov team, reports should be run monthly on a regular schedule to keep track of these metrics over time. These reports should be uploaded to the GitHub Metrics Google Sheet in the code.gov team drive. To upload a new report:
 
 * In the Google Sheet, click on `File > Import`
 * Click `Upload`
