@@ -51,7 +51,7 @@ Finally, the last row of the .csv report aggregates these same metrics for all o
 
 ## Definitions
 
-**Contributor**: a GitHub user who has either opened an issue or opened a pull request. This is, admittedly, not an ideal metric for a 2 reasons:
+**Contributor**: a GitHub user who has either opened an issue or opened a pull request. This is, admittedly, not an ideal metric for a few reasons:
 
 1. People can make contributions in a number of ways beyond issues/pull requests (like mockups, UX research, documentation, and more)
 2. The main script uses usernames to identify unique users (because the GitHub GraphQL API unfortunately doesn't provide a unique ID for each user). Therefore, if a GitHub user make a contribution, changes their username, and then makes another contribution, they will be counted as two contributorr
