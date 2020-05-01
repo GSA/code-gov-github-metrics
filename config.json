@@ -1,21 +1,22 @@
 {
     "owner": "GSA",
     "repoList": [
-        "code-gov", 
-        "code-gov-front-end", 
-        "code-gov-api", 
-        "code-gov-api-client", 
-        "code-gov-font", 
-        "code-gov-harvester", 
-        "code-gov-developer-docs", 
-        "code-gov-style", 
-        "code-gov-adapters", 
-        "code-gov-validator", 
-        "code-gov-integrations", 
-        "json-schema-web-component", 
-        "json-schema-validator-web-component", 
-        "code-gov-about-page", 
-        "code-gov-fscp-react-component", 
-        "code-gov-data"
+        "code-gov",
+        "code-gov-front-end",
+        "code-gov-api-client",
+        "code-gov-font",
+        "code-gov-style",
+        "code-gov-data",
+        "code-gov-site-map-generator",
+        "code-gov-api",
+        "code-gov-harvester",
+        "code-gov-adapters",
+        "code-gov-integrations",
+        "code-gov-validator",
+        "code-gov-verify-agency-jsons",
+        "code-gov-converter",
+        "code-gov-repo-template",
+        "code-gov-github-metrics",
+        "code-gov-open-source-toolkit"
     ]
 }
