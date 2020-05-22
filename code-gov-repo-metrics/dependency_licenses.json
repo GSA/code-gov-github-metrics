@@ -1,0 +1,51 @@
+{
+  "code-gov-github-metrics@1.0.0": {
+    "licenses": "CC0-1.0",
+    "publisher": "Courtney Brousseau",
+    "path": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics",
+    "licenseFile": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics/README.md"
+  },
+  "cross-fetch@2.2.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/lquixada/cross-fetch",
+    "publisher": "Leonardo Quixada",
+    "email": "lquixada@gmail.com",
+    "path": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics/node_modules/cross-fetch",
+    "licenseFile": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics/node_modules/cross-fetch/LICENSE"
+  },
+  "csv-writer@1.4.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/ryu1kn/csv-writer",
+    "publisher": "Ryuichi Inagaki",
+    "path": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics/node_modules/csv-writer",
+    "licenseFile": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics/node_modules/csv-writer/README.md"
+  },
+  "dotenv@8.0.0": {
+    "licenses": "BSD-2-Clause",
+    "repository": "https://github.com/motdotla/dotenv",
+    "path": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics/node_modules/dotenv",
+    "licenseFile": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics/node_modules/dotenv/LICENSE"
+  },
+  "graphql-request@1.8.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/graphcool/graphql-request",
+    "publisher": "Johannes Schickling",
+    "email": "johannes@graph.cool",
+    "path": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics/node_modules/graphql-request",
+    "licenseFile": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics/node_modules/graphql-request/LICENSE"
+  },
+  "node-fetch@2.1.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/bitinn/node-fetch",
+    "publisher": "David Frank",
+    "path": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics/node_modules/node-fetch",
+    "licenseFile": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics/node_modules/node-fetch/LICENSE.md"
+  },
+  "whatwg-fetch@2.0.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/github/fetch",
+    "path": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics/node_modules/whatwg-fetch",
+    "licenseFile": "/Users/courtneyrbrousseau/Desktop/code-gov-github-metrics/node_modules/whatwg-fetch/LICENSE"
+  }
+}
+

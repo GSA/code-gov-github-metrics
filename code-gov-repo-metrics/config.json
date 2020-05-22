@@ -1,0 +1,23 @@
+{
+    "owner": "GSA",
+    "repoList": [
+        "code-gov",
+        "code-gov-front-end",
+        "code-gov-api-client",
+        "code-gov-font",
+        "code-gov-style",
+        "code-gov-data",
+        "cautious",
+        "code-gov-site-map-generator",
+        "code-gov-api",
+        "code-gov-harvester",
+        "code-gov-adapters",
+        "code-gov-integrations",
+        "code-gov-validator",
+        "code-gov-verify-agency-jsons",
+        "code-gov-converter",
+        "code-gov-repo-template",
+        "code-gov-github-metrics",
+        "code-gov-open-source-toolkit"
+    ]
+}
