@@ -6,5 +6,202 @@
     "cisagov",
     "US-CBP",
     "uscis"
+  ],
+  "DOC": [
+    "businessusa",
+    "commercedataservice",
+    "commercegov",
+    "internationaltradeadministration",
+    "ioos",
+    "nesii",
+    "NMML",
+    "noaa-gfdl",
+    "NOAA-ORR-ERD",
+    "ntia",
+    "SelectUSA",
+    "us-bea",
+    "uscensusbureau",
+    "useda",
+    "USPTO",
+    "XDgov"
+  ],
+  "DOD": [
+    "adl-aicc",
+    "adlnet",
+    "afrl",
+    "afseo",
+    "defense-cyber-crime-center",
+    "deptofdefense",
+    "erdc-itl",
+    "iadgov",
+    "info-sharing-environment",
+    "M-O-S-E-S",
+    "missioncommand",
+    "NationalGuard",
+    "NationalSecurityAgency",
+    "ngageoint",
+    "nsacyber",
+    "project-interoperability",
+    "psns-imf",
+    "redhawksdr",
+    "screamlab",
+    "usarmyresearchlab",
+    "USNavalResearchLaboratory",
+    "virtual-world-framework"
+  ],
+  "DOE": [
+    "doecode",
+    "energyapps",
+    "llnl",
+    "ngds",
+    "petsc"
+  ],
+  "DOI": [
+    "arcticlcc",
+    "nationalparkservice",
+    "NCRN",
+    "usbr",
+    "USFWS",
+    "usgs",
+    "USGS-Astrogeology",
+    "USGS-CIDA",
+    "usgs-cmg",
+    "usgs-eros",
+    "USGS-OWI",
+    "USGS-R",
+    "USGS-WiM",
+    "usindianaffairs",
+    "usinterior"
+  ],
+  "DOJ": [
+    "NIEM",
+    "usdoj"
+  ],
+  "DOL": [
+    "EEOC",
+    "usdepartmentoflabor"
+  ],
+  "DOT": [
+    "CA-CST-Library",
+    "CA-CST-SII",
+    "historyatstate",
+    "IIP-Design",
+    "state-hiu",
+    "usstatedept"
+  ],
+  "ED": [
+    "Federal-Aviation-Administration",
+    "IMDProjects",
+    "usdot-fhwa-stol",
+    "usdot-jpo-ode"
+  ],
+  "EPA": [
+    "usedgov",
+    "regulationsgov",
+    "usepa"
+  ],
+  "FEC": [
+    "fecgov"
+  ],
+  "GSA": [
+    "18f",
+    "digital-analytics-program",
+    "eregs",
+    "government-services",
+    "gsa",
+    "gsa-oes",
+    "Innovation-Toolkit",
+    "opengovplatform",
+    "presidential-innovation-fellows",
+    "project-open-data",
+    "sbstusa",
+    "usagov",
+    "usasearch",
+    "usg-scope"
+  ],
+  "HHS": [
+    "blue-button",
+    "CDCgov",
+    "cmsgov",
+    "demand-driven-open-data",
+    "didsr",
+    "fda",
+    "hhs",
+    "HHS-AHRQ",
+    "HHSDigitalMediaAPIPlatform",
+    "HHSIDEAlab",
+    "informaticslab",
+    "nhanes",
+    "nidcd"
+  ],
+  "HUD": [
+    "hudgov"
+  ],
+  "NARA": [
+    "usnationalarchives"
+  ],
+  "NASA": [
+    "ccmc",
+    "globegit",
+    "keplergo",
+    "nasa",
+    "nasa-develop",
+    "nasa-gibs",
+    "NASA-rdt",
+    "nasa-tournament-lab",
+    "nasaworldwind",
+    "NeoGeographyToolkit",
+    "Open-Sat",
+    "SERVIR",
+    "sunpy",
+    "visionworkbench"
+  ],
+  "NSF": [
+    "nsf-open"
+  ],
+  "OPM": [
+    "usajobs"
+  ],
+  "SBA": [
+    "USSBA"
+  ],
+  "SSA": [
+    "SSAgov"
+  ],
+  "STATE": [
+    "CA-CST-Library",
+    "CA-CST-SII",
+    "historyatstate",
+    "IIP-Design",
+    "state-hiu",
+    "usstatedept"
+  ],
+  "TREASURY": [
+    "fedspendingtransparency",
+    "IRSgov",
+    "US-Department-of-the-Treasury"
+  ],
+  "USAID": [
+    "usaid"
+  ],
+  "USDA": [
+    "GrainGenes",
+    "usda",
+    "usda-ars-agil",
+    "usda-ars-gbru",
+    "usda-ars-ltar",
+    "usda-ars-nwrc",
+    "usda-ars-wmsru",
+    "USDA-ERS",
+    "USDA-FSA",
+    "USDA-NIFA",
+    "usda-vs",
+    "usdaForestService",
+    "WFMRDA"
+  ],
+  "VA": [
+    "department-of-veterans-affairs",
+    "USDeptVeteransAffairs",
+    "VHAINNOVATIONS"
   ]
 }
