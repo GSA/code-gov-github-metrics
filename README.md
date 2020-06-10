@@ -1,30 +1,33 @@
-# code-gov-github-metrics
-This project compiles and calculates GitHub metrics across [the different repos that make up Code.gov](https://github.com/GSA/code-gov) so that the Code.gov team can understand and track community contributions and other data points over time.
+This repo contains scripts for gathering GitHub API data pertaining to Code.gov and federal government repositories. These *engagement* metrics in code-gov-repo-metrics and government-wide-repo-metrics are slightly different but generally include forks, starts, watchers, and issues per repository. Furthermore, the process to run the metrics is different with specific instructions per type of metric included here.
 
-This project uses the [GitHub GraphQL API v4](https://developer.github.com/v4/).
-
-
-## Getting Started
-First clone the repo locally:
+To obtain code-gov-repo-metrics and government-wide-repo-metrics, begin by cloning the repo.
 
 ```
 git clone https://github.com/GSA/code-gov-github-metrics.git
 ```
 
-Then move into the repo's directory and install the NPM dependencies:
+<hr>
+
+# code-gov-repo-metrics
+This folder compiles GitHub metrics across the [different repos]((https://github.com/GSA/code-gov)) that make up Code.gov.
+
+This portion of the project uses the [GitHub GraphQL API v4](https://developer.github.com/v4/).
+
+## Getting Started
+After cloning the entire repo, move into the repo's directory and folder and install the NPM dependencies.
 
 ```
-cd code-gov-github-metrics
+cd code-gov-github-metrics/code-gov-repo-metrics
 npm install
 ```
 
-Next, create a .env file based on the template:
+Next, create a .env file based on the template.
 
 ```
 cp .env.example .env
 ```
 
-Now, [create a GitHub Personal Access Token](https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line#creating-a-token). You should only need to enable the "repo" scope (the first checkbox) when creating your token. Once you have your token, insert it into the newly created .env file, replacing `<INSERT YOUR PERSONAL ACCESS TOKEN HERE>`. Don't include any spaces or quotes in the .env file!
+Now, [create a GitHub Personal Access Token](https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line#creating-a-token). You should only need to enable the "repo" scope (the first checkbox) when creating your token. Once you have your token, insert it into the newly created .env file, replacing `<INSERT YOUR PERSONAL ACCESS TOKEN HERE>`. Don't include curved brackets (<>), spaces (" "), or quotes ("") in the .env file!
 
 ## Configuration
 
@@ -32,7 +35,7 @@ The main script will query the GitHub repositories specified in [`config.json`](
 
 ## Usage
 
-To generate a new report, run a command like the one below:
+To generate a report, run the following command.
 
 ```
 npm run start <START OF TIME PERIOD TO QUERY> <END OF TIME PERIOD TO QUERY>
@@ -54,7 +57,7 @@ The report contains a number of metrics about the repositories for all time and 
 
 ### Saving and visualizing reports
 
-For the code.gov team, reports should be run monthly on a regular schedule to keep track of these metrics over time. These reports should be uploaded to the GitHub Metrics Google Sheet in the code.gov team drive. To upload a new report:
+For the Code.gov team, reports should be run monthly on a regular schedule to keep track of these metrics over time. These reports should be uploaded to the GitHub Metrics Google Sheet in the Code.gov team drive. To upload a new report:
 
 * In the Google Sheet, click on `File > Import`
 * Click `Upload`
@@ -65,15 +68,67 @@ For the code.gov team, reports should be run monthly on a regular schedule to ke
 
 After following these steps, the report will be saved in Google Sheets (which is important because the reports are included in the [`.gitignore`](https://github.com/GSA/code-gov-github-metrics/blob/master/.gitignore) and therefore not committed to GitHub). The new data will also be automatically added to the visualizations in the corresponding sheets.
 
-## Contributing
+<hr>
+
+# government-wide-repo-metrics
+This folder compiles GitHub metrics across all known federal government repos. The most current [list of organizations](https://github.com/github/government.github.com/blob/gh-pages/_data/governments.yml) is maintained by the GitHub Government team.
+
+This portion of the project uses the [GitHub API v3](https://developer.github.com/v3/).
+
+## Getting Started
+After cloning the entire repo, move into the repo's directory and folder and install the NPM dependencies:
+
+```
+cd code-gov-github-metrics/government-wide-repo-metrics
+npm install
+```
+Next, create a .env file based on the template.
+
+```
+cp .env.example .env
+```
+
+Now, [create a GitHub Personal Access Token](https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line#creating-a-token). You may already have this token if you ran the code-gov-repo-metrics. Insert your token into the newly created .env file, replacing `<INSERT YOUR PERSONAL ACCESS TOKEN HERE>`. Don't include any angle brackets (<>), spaces (" "), or quotes ("") in the .env file! (Note: You could copy your .env file to use with either metrics folder.)
+
+## Configuration
+
+The main script will query all GitHub repositories specified in [`agencies-full.json`](https://github.com/GSA/code-gov-github-metrics/blob/master/government-wide-repo-metrics/agencies-full.json). In this file, each agency is listed with associated organizations on GitHub. In most cases, agencies have multiple GitHub organizations with numerous repositories.
+
+## Usage
+
+To generate a new report, run the following command.
+
+```
+node index.js
+```
+
+Note: To see an output of the API to the terminal as the script is running, run the following command in lieu of the one immediately above.
+
+```
+node index.js debug
+```
+
+### .csv report
+
+Running this script will create a .csv file titled 'current-date.csv' and will be located in the exports folder.
+
+The report contains a number of metrics about the repositories and definitions of these metrics and can be found in [index.js](https://github.com/GSA/code-gov-github-metrics/blob/master/government-wide-repo-metrics/index.js).
+
+### Saving and visualizing reports
+
+Go to the local file directory (e.g., finder on Mac, explore on Windows) to obtain the CSV file outside your code editor.
+
+<hr>
+
+### Contributing
 
 See [CONTRIBUTING](https://github.com/GSA/code-gov-github-metrics/blob/master/CONTRIBUTING.md)
 
-## License
+### License
 
 See [LICENSE](https://github.com/GSA/code-gov-github-metrics/blob/master/LICENSE.md)
 
-## Questions?
+### Questions?
 If you have questions, please feel free to contact us:  
 * Open an issue
 * [LinkedIn](https://www.linkedin.com/company/code-gov/)  
