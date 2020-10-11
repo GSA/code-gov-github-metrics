@@ -53,7 +53,7 @@ Running this script will create a .csv file report in the reports folder with th
 
 Note: An .xls version is provided for reference (see example_report_2020-5-2 | 2020-4-1 -> 2020-4-30.xls). Normal naming convention would exclude *example_report_*.
 
-The report contains a number of metrics about the repositories for all time and for the specified time period. The definitions of these metrics can be found in [DATASCHEMA](https://github.com/GSA/code-gov-github-metrics/blob/master/DATASCHEMA.md).
+The report contains a number of metrics about the repositories for all time and for the specified time period. The definitions of these metrics can be found in [DATASCHEMA](https://github.com/GSA/code-gov-github-metrics/blob/master/code-gov-repo-metrics/DATASCHEMA.md).
 
 ### Saving and visualizing reports
 
